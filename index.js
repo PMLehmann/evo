@@ -44,7 +44,7 @@ class Evoli {
 
     update(delta) {
 
-        this.hungry = 0.02*Math.abs(this.tempSpeed);
+        this.hungry+= (0.0001*Math.abs(this.tempSpeed));
 
         this.x = (this.x + this.xspeed)
         this.y = (this.y + this.yspeed)
@@ -136,6 +136,7 @@ function update(delta) {
         if (Math.abs(Math.abs(evoli.x) - (Math.abs(foodx))) < 3 && Math.abs(Math.abs(evoli.y) - Math.abs(foody)) < 3) {
             evoli.health += 30;
             evoli.ate++;
+            evoli.hungry = 0;
             if (evoli.health > 100) {
                 evoli.health = 100;
             }
@@ -158,20 +159,19 @@ function draw() {
 
     for (let index = 0; index < evolis.length; index++) {
         var evoli = evolis[index];
-        ctx.fillStyle = "black";
+        ctx.fillStyle = "blue";
         ctx.fillRect(evoli.x, evoli.y, 5, 5)
         ctx.font = "10px Arial";
-        ctx.fillText("Evoli" + evoli.number, evoli.x+10, evoli.y+5);
+        ctx.fillText("#" + evoli.number, evoli.x+10, evoli.y+5);
     }
 
     // GUI
 
     for (let index = 0; index < evolis.length; index++) {
         var evoli = evolis[index];
-        ctx.fillStyle = "black";
         ctxGUI.fillStyle = "black";
         ctxGUI.font = "15px Arial";
-        ctxGUI.fillText("Evoli" + evoli.number + " (S:" + Math.abs(evoli.tempSpeed) + ") (A:" + evoli.ate +") (H:" + roundDec(evoli.health, 2) + ")", 10, ((index + 1) * 35)-8);
+        ctxGUI.fillText("Evoli #" + evoli.number + " (S:" + Math.abs(evoli.tempSpeed) + ") (A:" + evoli.ate +") (H:" + roundDec(evoli.health, 2) + ")", 10, ((index + 1) * 35)-8);
         ctxGUI.fillStyle = "red";
         ctxGUI.fillRect(10, (index + 1) * 35, 200, 8);
         ctxGUI.fillStyle = "green";
