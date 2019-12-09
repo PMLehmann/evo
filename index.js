@@ -27,8 +27,8 @@ class Evoli {
         }
         this.xspeed = this.tempSpeed;
         this.yspeed = this.tempSpeed;
-        this.eyeradius = 150;
-        this.health = 30;
+        this.eyeradius = (Math.random()*250)+100;
+        this.health = 50;
         this.hungry = 0;
         this.ate = 0;
     }
@@ -44,7 +44,7 @@ class Evoli {
 
     update(delta) {
 
-        this.hungry+= (0.0001*Math.abs(this.tempSpeed));
+        this.hungry+= (0.0001*Math.abs(this.tempSpeed*this.tempSpeed));
 
         this.x = (this.x + this.xspeed)
         this.y = (this.y + this.yspeed)
@@ -84,13 +84,14 @@ class Evoli {
 
 // Game
 
+var total = 1;
 let evolis = new Array(10);
 var foodDropped = false;
 var foodx = Math.random() * canvas.width;
 var foody = Math.random() * canvas.height;
 
 for (let index = 0; index < evolis.length; index++) {
-    evolis[index] = new Evoli(index+1,Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 5);
+    evolis[index] = new Evoli(total++,Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 5);
 }
 
 window.requestAnimationFrame(gameLoop);
@@ -120,8 +121,8 @@ function update(delta) {
         }
     }
     if (!foodDropped) {
-        foodx = (Math.random() * canvas.width-20)+15;
-        foody = (Math.random() * canvas.height-20)+15;
+        foodx = (Math.random() * canvas.width-10)+1;
+        foody = (Math.random() * canvas.height-10)+1;
         foodDropped = true;
     }
 
@@ -143,6 +144,30 @@ function update(delta) {
             foodDropped = false;
         }
     }
+
+    // reproduce
+
+    var newEvolis = new Array(0);
+    for (let index = 0; index < evolis.length; index++) {
+        var evoliFather = evolis[index];
+        for (let index1 = 0; index1 < evolis.length; index1++) {
+            if (index!=index1) {
+                var evoliMother = evolis[index1];
+                if (Math.abs(evoliFather.x-evoliMother.x) < 5 && Math.abs(evoliFather.y-evoliMother.y) < 5) {
+                    if (evoliFather.health > 50 && evoliMother.health > 50) {
+                        var babyEvoli = new Evoli(total++, evoliFather.x, evoliMother.y, (Math.abs(evoliFather.tempSpeed) + Math.abs(evoliMother.tempSpeed)));
+                        evoliMother.health-=25;
+                        evoliFather.x+=5;
+                        evoliMother.x+=-5;
+                        newEvolis.push(babyEvoli);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    Array.prototype.push.apply(evolis, newEvolis);
 
     evolis.sort((a, b) => (a.ate > b.ate) ? -1 : 1)
 }
