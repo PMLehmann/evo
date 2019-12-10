@@ -1,5 +1,5 @@
 // Setup
-let scale = 256;
+let scale = 512;
 let threshold = 0.02;
 let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext('2d');
@@ -28,7 +28,7 @@ class Evoli {
         }
         this.xspeed = this.tempSpeed;
         this.yspeed = this.tempSpeed;
-        this.eyeradius = (Math.random()*250)+100;
+        this.eyeradius = (Math.random()*250)+200;
         this.health = 50;
         this.hungry = 0;
         this.ate = 0;
@@ -57,13 +57,15 @@ class Evoli {
             if (getTerrainHeightValue(originalx+this.xspeed, originaly) >= threshold) {
                 this.x= originalx + this.xspeed;
             } else {
-                this.x= originalx - this.xspeed;
+                this.x= originalx;
+                this.xspeed = -this.xspeed;
             }
             
             if (getTerrainHeightValue(this.x, originaly+this.yspeed) >= threshold) {
                 this.y = originaly + this.yspeed;
             } else {
-                this.y = originaly - this.yspeed;
+                this.y = originaly;
+                this.yspeed=  -this.yspeed;
             }
         }
 
@@ -113,23 +115,31 @@ var imgdatalen = imgdata.data.length;
 
 
 for(var i=0;i<imgdatalen/4;i++){  //iterate over every pixel in the canvas
-    if (terrain[i] >= 0.8) {
+    if (terrain[i] >= 0.85) {
         imgdata.data[4*i] = 255;    // RED (0-255)
         imgdata.data[4*i+1] = 255;    // GREEN (0-255)
         imgdata.data[4*i+2] = 255;    // BLUE (0-255)
+    } else if (terrain[i] >= 0.75) {
+        imgdata.data[4*i] = 139;    // RED (0-255)
+        imgdata.data[4*i+1] = 69;    // GREEN (0-255)
+        imgdata.data[4*i+2] = 19;    // BLUE (0-255)
     } else if (terrain[i] >= 0.6) {
         imgdata.data[4*i] = 205;    // RED (0-255)
         imgdata.data[4*i+1] = 133;    // GREEN (0-255)
         imgdata.data[4*i+2] = 63;    // BLUE (0-255)
+    } else if (terrain[i] >= 0.5) {
+        imgdata.data[4*i] = 34;    // RED (0-255)
+        imgdata.data[4*i+1] = 139;    // GREEN (0-255)
+        imgdata.data[4*i+2] = 34;    // BLUE (0-255)
     } else if (terrain[i] >= 0.3) {
         imgdata.data[4*i] = 0;    // RED (0-255)
-        imgdata.data[4*i+1] = 230;    // GREEN (0-255)
+        imgdata.data[4*i+1] = 255;    // GREEN (0-255)
         imgdata.data[4*i+2] = 0;    // BLUE (0-255)
     } else if (terrain[i] >= 0.2) {
         imgdata.data[4*i] = 255;    // RED (0-255)
         imgdata.data[4*i+1] = 255;    // GREEN (0-255)
         imgdata.data[4*i+2] = 102;    // BLUE (0-255)
-    } else if (terrain[i] >= 0.02) {
+    } else if (terrain[i] >= threshold) {
         imgdata.data[4*i] = 0;    // RED (0-255)
         imgdata.data[4*i+1] = 0;    // GREEN (0-255)
         imgdata.data[4*i+2] = 255;    // BLUE (0-255)
