@@ -1,5 +1,6 @@
 // Setup
-
+let scale = 256;
+let threshold = 0.02;
 let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext('2d');
 let canvasGUI = document.getElementById("canvasGUI");
@@ -46,8 +47,25 @@ class Evoli {
 
         this.hungry+= (0.0001*Math.abs(this.tempSpeed*this.tempSpeed));
 
+        var originalx = this.x;
+        var originaly = this.y;
+
         this.x = (this.x + this.xspeed)
         this.y = (this.y + this.yspeed)
+
+        if (getTerrainHeightValue(this.x, this.y) <= threshold) {
+            if (getTerrainHeightValue(originalx+this.xspeed, originaly) >= threshold) {
+                this.x= originalx + this.xspeed;
+            } else {
+                this.x= originalx - this.xspeed;
+            }
+            
+            if (getTerrainHeightValue(this.x, originaly+this.yspeed) >= threshold) {
+                this.y = originaly + this.yspeed;
+            } else {
+                this.y = originaly - this.yspeed;
+            }
+        }
 
         if (this.x > (canvas.width - 5)) {
             this.x = canvas.width - 5;
@@ -83,6 +101,45 @@ class Evoli {
 }
 
 // Game
+var terrain = new Array(canvas.width*canvas.height);
+var simplex = new SimplexNoise();
+for (let line = 0; line < canvas.height; line++) {
+    for (let pixel = 0; pixel < canvas.width; pixel++) {
+        terrain[(line*canvas.width)+pixel] = simplex.noise2D(pixel/scale, line/scale);
+    }
+}
+var imgdata = ctx.getImageData(0,0, canvas.width, canvas.height);
+var imgdatalen = imgdata.data.length;
+
+
+for(var i=0;i<imgdatalen/4;i++){  //iterate over every pixel in the canvas
+    if (terrain[i] >= 0.8) {
+        imgdata.data[4*i] = 255;    // RED (0-255)
+        imgdata.data[4*i+1] = 255;    // GREEN (0-255)
+        imgdata.data[4*i+2] = 255;    // BLUE (0-255)
+    } else if (terrain[i] >= 0.6) {
+        imgdata.data[4*i] = 205;    // RED (0-255)
+        imgdata.data[4*i+1] = 133;    // GREEN (0-255)
+        imgdata.data[4*i+2] = 63;    // BLUE (0-255)
+    } else if (terrain[i] >= 0.3) {
+        imgdata.data[4*i] = 0;    // RED (0-255)
+        imgdata.data[4*i+1] = 230;    // GREEN (0-255)
+        imgdata.data[4*i+2] = 0;    // BLUE (0-255)
+    } else if (terrain[i] >= 0.2) {
+        imgdata.data[4*i] = 255;    // RED (0-255)
+        imgdata.data[4*i+1] = 255;    // GREEN (0-255)
+        imgdata.data[4*i+2] = 102;    // BLUE (0-255)
+    } else if (terrain[i] >= 0.02) {
+        imgdata.data[4*i] = 0;    // RED (0-255)
+        imgdata.data[4*i+1] = 0;    // GREEN (0-255)
+        imgdata.data[4*i+2] = 255;    // BLUE (0-255)
+    } else {
+        imgdata.data[4*i] = 0;    // RED (0-255)
+        imgdata.data[4*i+1] = 0;    // GREEN (0-255)
+        imgdata.data[4*i+2] = 150;    // BLUE (0-255)
+    }
+    imgdata.data[4*i+3] = 255;  // APLHA (0-255)
+}
 
 var total = 1;
 let evolis = new Array(10);
@@ -91,7 +148,16 @@ var foodx = Math.random() * canvas.width;
 var foody = Math.random() * canvas.height;
 
 for (let index = 0; index < evolis.length; index++) {
-    evolis[index] = new Evoli(total++,Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 5);
+    var evox,evoy;
+    do {
+        do {
+            evox = (Math.random() * canvas.width-10)+1;
+        } while (evox >= (canvas.width-10) && evox <= 10 );
+        do {
+            evoy = (Math.random() * canvas.height-10)+1;
+        } while (evoy >= (canvas.height-10) && evoy <= 10);
+    } while (getTerrainHeightValue(evox,evoy) <= 0.2);
+    evolis[index] = new Evoli(total++,evox, evoy, Math.random() * 5);
 }
 
 window.requestAnimationFrame(gameLoop);
@@ -121,8 +187,14 @@ function update(delta) {
         }
     }
     if (!foodDropped) {
-        foodx = (Math.random() * canvas.width-10)+1;
-        foody = (Math.random() * canvas.height-10)+1;
+        do {
+            do {
+                foodx = (Math.random() * canvas.width-10)+1;
+            } while (foodx >= (canvas.width-10) && foodx <= 10 );
+            do {
+                foody = (Math.random() * canvas.height-10)+1;
+            } while (foody >= (canvas.height-10) && foody <= 10);
+        } while (getTerrainHeightValue(foodx,foody) <= 0.2);
         foodDropped = true;
     }
 
@@ -134,7 +206,7 @@ function update(delta) {
             evoli.yspeed = newPos[1];
         }
 
-        if (Math.abs(Math.abs(evoli.x) - (Math.abs(foodx))) < 3 && Math.abs(Math.abs(evoli.y) - Math.abs(foody)) < 3) {
+        if (Math.abs(Math.abs(evoli.x) - (Math.abs(foodx))) < 5 && Math.abs(Math.abs(evoli.y) - Math.abs(foody)) < 5) {
             evoli.health += 30;
             evoli.ate++;
             evoli.hungry = 0;
@@ -179,19 +251,36 @@ function draw() {
     ctxGUI.clearRect(0, 0, canvasGUI.width, canvasGUI.height);
 
     // Game
+    // terrain
+
+    drawTerrain();
+
+
     ctx.fillStyle = "red";
     ctx.fillRect(foodx, foody, 3, 3)
 
     for (let index = 0; index < evolis.length; index++) {
         var evoli = evolis[index];
-        ctx.fillStyle = "blue";
+        ctx.fillStyle = "red";
         ctx.fillRect(evoli.x, evoli.y, 5, 5)
         ctx.font = "10px Arial";
         ctx.fillText("#" + evoli.number, evoli.x+10, evoli.y+5);
     }
 
     // GUI
+    drawGUI();
+}
 
+function drawTerrain() {
+    ctx.putImageData(imgdata,0,0);
+}
+
+function getTerrainHeightValue(x, y) {
+    return simplex.noise2D(x/scale, y/scale);
+}
+
+
+function drawGUI() {
     for (let index = 0; index < evolis.length; index++) {
         var evoli = evolis[index];
         ctxGUI.fillStyle = "black";
@@ -202,7 +291,6 @@ function draw() {
         ctxGUI.fillStyle = "green";
         ctxGUI.fillRect(10, (index + 1) * 35, evoli.health*2, 8)
     }
-
 }
 
 

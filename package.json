@@ -7,5 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Philipp Leehmann",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "simplex-noise": "^2.4.0"
+  }
 }
