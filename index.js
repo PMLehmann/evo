@@ -1,7 +1,7 @@
 // Setup
 let scale = 756;
 let threshold = 0.05;
-let foodthreshold = 0.05;
+let foodthreshold = 0.2;
 let mainDivWidth = document.getElementById('main').clientWidth;
 let canvas = document.getElementById('canvas');
 console.log(main.width)
@@ -9,6 +9,15 @@ let finalwidth = valBetween(mainDivWidth*0.71, 300, 710);
 canvas.setAttribute('width', finalwidth);
 let finalHeight = valBetween(window.innerHeight-40, 400, finalwidth)
 canvas.setAttribute('height', finalHeight);
+let canvasLeft = canvas.offsetLeft;
+let canvasTop = canvas.offsetTop;
+canvas.addEventListener('click', function(event) {
+    var x = event.pageX - canvasLeft,
+        y = event.pageY - canvasTop;
+
+    dropFood(x,y);
+
+}, false);
 let ctx = canvas.getContext('2d');
 let canvasGUI = document.getElementById("canvasGUI");
 canvasGUI.setAttribute('height', finalHeight);
@@ -18,6 +27,20 @@ var lastFrameTimeMs = 0,
     maxFPS = 60,
     delta = 0,
     timestep = 1000 / 60;
+
+class Food {
+    constructor(width, height) {
+        this.x, this.y;
+        do {
+            do {
+                this.x = (Math.random() * width-10)+1;
+            } while (this.x >= (width-10) || this.x <= 10 );
+            do {
+                this.y = (Math.random() * height-10)+1;
+            } while (this.y >= (height-10) || this.y <= 10);
+        } while (getTerrainHeightValue(this.x,this.y) <= foodthreshold*3);
+    }
+}
 
 class Evoli {
 
@@ -153,7 +176,7 @@ for(var i=0;i<imgdatalen/4;i++){  //iterate over every pixel in the canvas
         imgdata.data[4*i] = 0;    // RED (0-255)
         imgdata.data[4*i+1] = 255;    // GREEN (0-255)
         imgdata.data[4*i+2] = 0;    // BLUE (0-255)
-    } else if (terrain[i] >= 0.2*3) {
+    } else if (terrain[i] >= foodthreshold*3) {
         imgdata.data[4*i] = 255;    // RED (0-255)
         imgdata.data[4*i+1] = 255;    // GREEN (0-255)
         imgdata.data[4*i+2] = 102;    // BLUE (0-255)
@@ -171,9 +194,8 @@ for(var i=0;i<imgdatalen/4;i++){  //iterate over every pixel in the canvas
 
 var total = 1;
 let evolis = new Array(10);
-var foodDropped = false;
-var foodx = Math.random() * canvas.width;
-var foody = Math.random() * canvas.height;
+let droppedFood = new Array(1);
+droppedFood[0] = new Food(canvas.width, canvas.height);
 
 for (let index = 0; index < evolis.length; index++) {
     var evox,evoy;
@@ -214,36 +236,38 @@ function update(delta) {
             evolis.splice(index, 1);
         }
     }
-    if (!foodDropped) {
-        do {
-            do {
-                foodx = (Math.random() * canvas.width-10)+1;
-            } while (foodx >= (canvas.width-10) || foodx <= 10 );
-            do {
-                foody = (Math.random() * canvas.height-10)+1;
-            } while (foody >= (canvas.height-10) || foody <= 10);
-        } while (getTerrainHeightValue(foodx,foody) <= 0.2*3);
-        foodDropped = true;
-    }
 
     for (let index = 0; index < evolis.length; index++) {
         var evoli = evolis[index];
-        if (calcDistance(evoli.x, evoli.y, foodx, foody) < evoli.eyeradius) {
-            var newPos = moveToPoint(foodx,foody,evoli.x,evoli.y, Math.abs(evoli.tempSpeed));
-            evoli.xspeed = newPos[0];
-            evoli.yspeed = newPos[1];
+        for (let index = 0; index < droppedFood.length; index++) {
+            let food = droppedFood[index];
+            if (calcDistance(evoli.x, evoli.y, food.x, food.y) < evoli.eyeradius) {
+                var newPos = moveToPoint(food.x,food.y,evoli.x,evoli.y, Math.abs(evoli.tempSpeed));
+                evoli.xspeed = newPos[0];
+                evoli.yspeed = newPos[1];
+            }
         }
 
-        if (Math.abs(Math.abs(evoli.x) - (Math.abs(foodx))) < 5 && Math.abs(Math.abs(evoli.y) - Math.abs(foody)) < 5) {
-            evoli.health += 30;
-            evoli.ate++;
-            evoli.hungry = 0;
-            if (evoli.health > 100) {
-                evoli.health = 100;
+        if (droppedFood.length>=1) {
+            let index = droppedFood.length;
+            while (index--) {
+                let food = droppedFood[index];
+                if (Math.abs(Math.abs(evoli.x) - (Math.abs(food.x))) < 5 && Math.abs(Math.abs(evoli.y) - Math.abs(food.y)) < 5) {
+                    evoli.health += 30;
+                    evoli.ate++;
+                    evoli.hungry = 0;
+                    if (evoli.health > 100) {
+                        evoli.health = 100;
+                    }
+                    droppedFood.splice(index, 1);
+                }
             }
-            foodDropped = false;
         }
     }
+
+    if (droppedFood.length==0) {
+        droppedFood[0] = new Food(canvas.width, canvas.height);
+    } 
 
     // reproduce
 
@@ -283,9 +307,11 @@ function draw() {
 
     drawTerrain();
 
-
-    ctx.fillStyle = "black";
-    ctx.fillRect(foodx, foody, 5, 5)
+    for (let index = 0; index < droppedFood.length; index++) {
+        let food = droppedFood[index];
+        ctx.fillStyle = "black";
+        ctx.fillRect(food.x, food.y, 5, 5)
+    }
 
     for (let index = 0; index < evolis.length; index++) {
         var evoli = evolis[index];
@@ -301,6 +327,15 @@ function draw() {
 
 function drawTerrain() {
     ctx.putImageData(imgdata,0,0);
+}
+
+function dropFood(x,y) {
+    if (getTerrainHeightValue(x,y) >= foodthreshold*3) {
+        let food = new Food(canvas.width, canvas.height);
+        food.x = x;
+        food.y = y;
+        droppedFood.push(food);
+    }
 }
 
 function getTerrainHeightValue(x, y) {
