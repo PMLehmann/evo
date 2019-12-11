@@ -28,7 +28,7 @@ class Evoli {
         }
         this.xspeed = this.tempSpeed;
         this.yspeed = this.tempSpeed;
-        this.eyeradius = (Math.random()*250)+200;
+        this.eyeradius = (Math.random()*250)+100;
         this.health = 50;
         this.hungry = 0;
         this.ate = 0;
@@ -148,7 +148,7 @@ for(var i=0;i<imgdatalen/4;i++){  //iterate over every pixel in the canvas
         imgdata.data[4*i+1] = 0;    // GREEN (0-255)
         imgdata.data[4*i+2] = 150;    // BLUE (0-255)
     }
-    imgdata.data[4*i+3] = 255;  // APLHA (0-255)
+    imgdata.data[4*i+3] = 255 - 255 * valBetween(terrain[i], 0.0, 0.3);  // APLHA (0-255)
 }
 
 var total = 1;
@@ -266,8 +266,8 @@ function draw() {
     drawTerrain();
 
 
-    ctx.fillStyle = "red";
-    ctx.fillRect(foodx, foody, 3, 3)
+    ctx.fillStyle = "black";
+    ctx.fillRect(foodx, foody, 5, 5)
 
     for (let index = 0; index < evolis.length; index++) {
         var evoli = evolis[index];
@@ -333,4 +333,8 @@ function round(v) {
 
 function roundDec(value, decimals) {
     return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+}
+
+function valBetween(v, min, max) {
+    return (Math.min(max, Math.max(min, v)));
 }
