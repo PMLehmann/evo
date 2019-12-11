@@ -1,7 +1,10 @@
 // Setup
 let scale = 512;
 let threshold = 0.02;
+let mainDivWidth = document.getElementById('main').clientWidth;
 let canvas = document.getElementById('canvas');
+console.log(main.width)
+canvas.setAttribute('width', valBetween(mainDivWidth*0.73, 300, 730));
 let ctx = canvas.getContext('2d');
 let canvasGUI = document.getElementById("canvasGUI");
 let ctxGUI = canvasGUI.getContext('2d');
@@ -293,7 +296,7 @@ function getTerrainHeightValue(x, y) {
 function drawGUI() {
     for (let index = 0; index < evolis.length; index++) {
         var evoli = evolis[index];
-        ctxGUI.fillStyle = "black";
+        ctxGUI.fillStyle = "white";
         ctxGUI.font = "15px Arial";
         ctxGUI.fillText("Evoli #" + evoli.number + " (S:" + Math.abs(evoli.tempSpeed) + ") (A:" + evoli.ate +") (H:" + roundDec(evoli.health, 2) + ")", 10, ((index + 1) * 35)-8);
         ctxGUI.fillStyle = "red";
