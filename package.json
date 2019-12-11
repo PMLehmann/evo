@@ -8,7 +8,5 @@
   },
   "author": "Philipp Leehmann",
   "license": "ISC",
-  "dependencies": {
-    "simplex-noise": "^2.4.0"
-  }
+  "dependencies": {}
 }

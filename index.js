@@ -1,6 +1,7 @@
 // Setup
-let scale = 512;
-let threshold = 0.02;
+let scale = 756;
+let threshold = 0.05;
+let foodthreshold = 0.05;
 let mainDivWidth = document.getElementById('main').clientWidth;
 let canvas = document.getElementById('canvas');
 console.log(main.width)
@@ -112,9 +113,11 @@ class Evoli {
 // Game
 var terrain = new Array(canvas.width*canvas.height);
 var simplex = new SimplexNoise();
+var simplexDistortion = new SimplexNoise();
+var simplexDistortion2 = new SimplexNoise();
 for (let line = 0; line < canvas.height; line++) {
     for (let pixel = 0; pixel < canvas.width; pixel++) {
-        terrain[(line*canvas.width)+pixel] = simplex.noise2D(pixel/scale, line/scale);
+        terrain[(line*canvas.width)+pixel] = simplex.noise2D(pixel/scale, line/scale) + simplexDistortion.noise2D(pixel/(scale/3), line/(scale/3)) + simplexDistortion2.noise2D(pixel/(scale/2), line/(scale/2));
     }
 }
 var imgdata = ctx.getImageData(0,0, canvas.width, canvas.height);
@@ -122,27 +125,35 @@ var imgdatalen = imgdata.data.length;
 
 
 for(var i=0;i<imgdatalen/4;i++){  //iterate over every pixel in the canvas
-    if (terrain[i] >= 0.85) {
+    if (terrain[i] >= 0.85*3) {
         imgdata.data[4*i] = 255;    // RED (0-255)
         imgdata.data[4*i+1] = 255;    // GREEN (0-255)
         imgdata.data[4*i+2] = 255;    // BLUE (0-255)
-    } else if (terrain[i] >= 0.75) {
+    } else if (terrain[i] >= 0.75*3) {
+        imgdata.data[4*i] = 109;    // RED (0-255)
+        imgdata.data[4*i+1] = 39;    // GREEN (0-255)
+        imgdata.data[4*i+2] = 0;    // BLUE (0-255)
+    } else if (terrain[i] >= 0.70*3) {
         imgdata.data[4*i] = 139;    // RED (0-255)
         imgdata.data[4*i+1] = 69;    // GREEN (0-255)
         imgdata.data[4*i+2] = 19;    // BLUE (0-255)
-    } else if (terrain[i] >= 0.6) {
+    } else if (terrain[i] >= 0.6*3) {
         imgdata.data[4*i] = 205;    // RED (0-255)
         imgdata.data[4*i+1] = 133;    // GREEN (0-255)
         imgdata.data[4*i+2] = 63;    // BLUE (0-255)
-    } else if (terrain[i] >= 0.5) {
+    } else if (terrain[i] >= 0.5*3) {
         imgdata.data[4*i] = 34;    // RED (0-255)
         imgdata.data[4*i+1] = 139;    // GREEN (0-255)
         imgdata.data[4*i+2] = 34;    // BLUE (0-255)
-    } else if (terrain[i] >= 0.3) {
+    } else if (terrain[i] >= 0.4*3) {
+        imgdata.data[4*i] = 0;    // RED (0-255)
+        imgdata.data[4*i+1] = 169;    // GREEN (0-255)
+        imgdata.data[4*i+2] = 60;    // BLUE (0-255)
+    } else if (terrain[i] >= 0.3*3) {
         imgdata.data[4*i] = 0;    // RED (0-255)
         imgdata.data[4*i+1] = 255;    // GREEN (0-255)
         imgdata.data[4*i+2] = 0;    // BLUE (0-255)
-    } else if (terrain[i] >= 0.2) {
+    } else if (terrain[i] >= 0.2*3) {
         imgdata.data[4*i] = 255;    // RED (0-255)
         imgdata.data[4*i+1] = 255;    // GREEN (0-255)
         imgdata.data[4*i+2] = 102;    // BLUE (0-255)
@@ -155,7 +166,7 @@ for(var i=0;i<imgdatalen/4;i++){  //iterate over every pixel in the canvas
         imgdata.data[4*i+1] = 0;    // GREEN (0-255)
         imgdata.data[4*i+2] = 150;    // BLUE (0-255)
     }
-    imgdata.data[4*i+3] = 255 - 255 * valBetween(terrain[i], 0.0, 0.3);  // APLHA (0-255)
+    imgdata.data[4*i+3] = 255;  // APLHA (0-255)
 }
 
 var total = 1;
@@ -211,7 +222,7 @@ function update(delta) {
             do {
                 foody = (Math.random() * canvas.height-10)+1;
             } while (foody >= (canvas.height-10) || foody <= 10);
-        } while (getTerrainHeightValue(foodx,foody) <= 0.2);
+        } while (getTerrainHeightValue(foodx,foody) <= 0.2*3);
         foodDropped = true;
     }
 
@@ -293,7 +304,7 @@ function drawTerrain() {
 }
 
 function getTerrainHeightValue(x, y) {
-    return simplex.noise2D(x/scale, y/scale);
+    return (simplex.noise2D(x/scale, y/scale) + simplexDistortion.noise2D(x/(scale/3), y/(scale/3)) + simplexDistortion2.noise2D(x/(scale/2), y/(scale/2)));
 }
 
 
