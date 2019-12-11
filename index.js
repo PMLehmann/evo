@@ -4,9 +4,13 @@ let threshold = 0.02;
 let mainDivWidth = document.getElementById('main').clientWidth;
 let canvas = document.getElementById('canvas');
 console.log(main.width)
-canvas.setAttribute('width', valBetween(mainDivWidth*0.71, 300, 710));
+let finalwidth = valBetween(mainDivWidth*0.71, 300, 710);
+canvas.setAttribute('width', finalwidth);
+let finalHeight = valBetween(window.innerHeight-40, 400, finalwidth)
+canvas.setAttribute('height', finalHeight);
 let ctx = canvas.getContext('2d');
 let canvasGUI = document.getElementById("canvasGUI");
+canvasGUI.setAttribute('height', finalHeight);
 let ctxGUI = canvasGUI.getContext('2d');
 
 var lastFrameTimeMs = 0,
