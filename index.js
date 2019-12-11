@@ -162,10 +162,10 @@ for (let index = 0; index < evolis.length; index++) {
     do {
         do {
             evox = (Math.random() * canvas.width-10)+1;
-        } while (evox >= (canvas.width-10) && evox <= 10 );
+        } while (evox >= (canvas.width-10) || evox <= 10 );
         do {
             evoy = (Math.random() * canvas.height-10)+1;
-        } while (evoy >= (canvas.height-10) && evoy <= 10);
+        } while (evoy >= (canvas.height-10) || evoy <= 10);
     } while (getTerrainHeightValue(evox,evoy) <= 0.2);
     evolis[index] = new Evoli(total++,evox, evoy, Math.random() * 5);
 }
@@ -200,10 +200,10 @@ function update(delta) {
         do {
             do {
                 foodx = (Math.random() * canvas.width-10)+1;
-            } while (foodx >= (canvas.width-10) && foodx <= 10 );
+            } while (foodx >= (canvas.width-10) || foodx <= 10 );
             do {
                 foody = (Math.random() * canvas.height-10)+1;
-            } while (foody >= (canvas.height-10) && foody <= 10);
+            } while (foody >= (canvas.height-10) || foody <= 10);
         } while (getTerrainHeightValue(foodx,foody) <= 0.2);
         foodDropped = true;
     }
