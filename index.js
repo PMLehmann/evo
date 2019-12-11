@@ -4,7 +4,7 @@ let threshold = 0.02;
 let mainDivWidth = document.getElementById('main').clientWidth;
 let canvas = document.getElementById('canvas');
 console.log(main.width)
-canvas.setAttribute('width', valBetween(mainDivWidth*0.73, 300, 730));
+canvas.setAttribute('width', valBetween(mainDivWidth*0.71, 300, 710));
 let ctx = canvas.getContext('2d');
 let canvasGUI = document.getElementById("canvasGUI");
 let ctxGUI = canvasGUI.getContext('2d');
