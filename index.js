@@ -5,17 +5,17 @@ let foodthreshold = 0.2;
 let mainDivWidth = document.getElementById('main').clientWidth;
 let canvas = document.getElementById('canvas');
 console.log(main.width)
-let finalwidth = valBetween(mainDivWidth*0.71, 300, 710);
+let finalwidth = valBetween(mainDivWidth * 0.71, 300, 710);
 canvas.setAttribute('width', finalwidth);
-let finalHeight = valBetween(window.innerHeight-40, 400, finalwidth)
+let finalHeight = valBetween(window.innerHeight - 40, 400, finalwidth)
 canvas.setAttribute('height', finalHeight);
 let canvasLeft = canvas.offsetLeft;
 let canvasTop = canvas.offsetTop;
-canvas.addEventListener('click', function(event) {
+canvas.addEventListener('click', function (event) {
     var x = event.pageX - canvasLeft,
         y = event.pageY - canvasTop;
 
-    dropFood(x,y);
+    dropFood(x, y);
 
 }, false);
 let ctx = canvas.getContext('2d');
@@ -33,12 +33,12 @@ class Food {
         this.x, this.y;
         do {
             do {
-                this.x = (Math.random() * width-10)+1;
-            } while (this.x >= (width-10) || this.x <= 10 );
+                this.x = (Math.random() * width - 10) + 1;
+            } while (this.x >= (width - 10) || this.x <= 10);
             do {
-                this.y = (Math.random() * height-10)+1;
-            } while (this.y >= (height-10) || this.y <= 10);
-        } while (getTerrainHeightValue(this.x,this.y) <= foodthreshold*3);
+                this.y = (Math.random() * height - 10) + 1;
+            } while (this.y >= (height - 10) || this.y <= 10);
+        } while (getTerrainHeightValue(this.x, this.y) <= foodthreshold * 3);
     }
 }
 
@@ -59,7 +59,7 @@ class Evoli {
         }
         this.xspeed = this.tempSpeed;
         this.yspeed = this.tempSpeed;
-        this.eyeradius = (Math.random()*250)+100;
+        this.eyeradius = (Math.random() * 250) + 100;
         this.health = 50;
         this.hungry = 0;
         this.ate = 0;
@@ -76,7 +76,7 @@ class Evoli {
 
     update(delta) {
 
-        this.hungry+= (0.0001*Math.abs(this.tempSpeed*this.tempSpeed));
+        this.hungry += (0.0001 * Math.abs(this.tempSpeed * this.tempSpeed));
 
         var originalx = this.x;
         var originaly = this.y;
@@ -85,18 +85,18 @@ class Evoli {
         this.y = (this.y + this.yspeed)
 
         if (getTerrainHeightValue(this.x, this.y) <= threshold) {
-            if (getTerrainHeightValue(originalx+this.xspeed, originaly) >= threshold) {
-                this.x= originalx + this.xspeed;
+            if (getTerrainHeightValue(originalx + this.xspeed, originaly) >= threshold) {
+                this.x = originalx + this.xspeed;
             } else {
-                this.x= originalx;
+                this.x = originalx;
                 this.xspeed = -this.xspeed;
             }
-            
-            if (getTerrainHeightValue(this.x, originaly+this.yspeed) >= threshold) {
+
+            if (getTerrainHeightValue(this.x, originaly + this.yspeed) >= threshold) {
                 this.y = originaly + this.yspeed;
             } else {
                 this.y = originaly;
-                this.yspeed=  -this.yspeed;
+                this.yspeed = -this.yspeed;
             }
         }
 
@@ -127,69 +127,69 @@ class Evoli {
             this.health = 0;
         }
 
-        if (this.health > 100){
+        if (this.health > 100) {
             this.health = 100;
         }
     }
 }
 
 // Game
-var terrain = new Array(canvas.width*canvas.height);
+var terrain = new Array(canvas.width * canvas.height);
 var simplex = new SimplexNoise();
 var simplexDistortion = new SimplexNoise();
 var simplexDistortion2 = new SimplexNoise();
 for (let line = 0; line < canvas.height; line++) {
     for (let pixel = 0; pixel < canvas.width; pixel++) {
-        terrain[(line*canvas.width)+pixel] = simplex.noise2D(pixel/scale, line/scale) + simplexDistortion.noise2D(pixel/(scale/3), line/(scale/3)) + simplexDistortion2.noise2D(pixel/(scale/2), line/(scale/2));
+        terrain[(line * canvas.width) + pixel] = simplex.noise2D(pixel / scale, line / scale) + simplexDistortion.noise2D(pixel / (scale / 3), line / (scale / 3)) + simplexDistortion2.noise2D(pixel / (scale / 2), line / (scale / 2));
     }
 }
-var imgdata = ctx.getImageData(0,0, canvas.width, canvas.height);
+var imgdata = ctx.getImageData(0, 0, canvas.width, canvas.height);
 var imgdatalen = imgdata.data.length;
 
 
-for(var i=0;i<imgdatalen/4;i++){  //iterate over every pixel in the canvas
-    if (terrain[i] >= 0.85*3) {
-        imgdata.data[4*i] = 255;    // RED (0-255)
-        imgdata.data[4*i+1] = 255;    // GREEN (0-255)
-        imgdata.data[4*i+2] = 255;    // BLUE (0-255)
-    } else if (terrain[i] >= 0.75*3) {
-        imgdata.data[4*i] = 109;    // RED (0-255)
-        imgdata.data[4*i+1] = 39;    // GREEN (0-255)
-        imgdata.data[4*i+2] = 0;    // BLUE (0-255)
-    } else if (terrain[i] >= 0.70*3) {
-        imgdata.data[4*i] = 139;    // RED (0-255)
-        imgdata.data[4*i+1] = 69;    // GREEN (0-255)
-        imgdata.data[4*i+2] = 19;    // BLUE (0-255)
-    } else if (terrain[i] >= 0.6*3) {
-        imgdata.data[4*i] = 205;    // RED (0-255)
-        imgdata.data[4*i+1] = 133;    // GREEN (0-255)
-        imgdata.data[4*i+2] = 63;    // BLUE (0-255)
-    } else if (terrain[i] >= 0.5*3) {
-        imgdata.data[4*i] = 34;    // RED (0-255)
-        imgdata.data[4*i+1] = 139;    // GREEN (0-255)
-        imgdata.data[4*i+2] = 34;    // BLUE (0-255)
-    } else if (terrain[i] >= 0.4*3) {
-        imgdata.data[4*i] = 0;    // RED (0-255)
-        imgdata.data[4*i+1] = 169;    // GREEN (0-255)
-        imgdata.data[4*i+2] = 60;    // BLUE (0-255)
-    } else if (terrain[i] >= 0.3*3) {
-        imgdata.data[4*i] = 0;    // RED (0-255)
-        imgdata.data[4*i+1] = 255;    // GREEN (0-255)
-        imgdata.data[4*i+2] = 0;    // BLUE (0-255)
-    } else if (terrain[i] >= foodthreshold*3) {
-        imgdata.data[4*i] = 255;    // RED (0-255)
-        imgdata.data[4*i+1] = 255;    // GREEN (0-255)
-        imgdata.data[4*i+2] = 102;    // BLUE (0-255)
+for (var i = 0; i < imgdatalen / 4; i++) {  //iterate over every pixel in the canvas
+    if (terrain[i] >= 0.85 * 3) {
+        imgdata.data[4 * i] = 255;    // RED (0-255)
+        imgdata.data[4 * i + 1] = 255;    // GREEN (0-255)
+        imgdata.data[4 * i + 2] = 255;    // BLUE (0-255)
+    } else if (terrain[i] >= 0.75 * 3) {
+        imgdata.data[4 * i] = 109;    // RED (0-255)
+        imgdata.data[4 * i + 1] = 39;    // GREEN (0-255)
+        imgdata.data[4 * i + 2] = 0;    // BLUE (0-255)
+    } else if (terrain[i] >= 0.70 * 3) {
+        imgdata.data[4 * i] = 139;    // RED (0-255)
+        imgdata.data[4 * i + 1] = 69;    // GREEN (0-255)
+        imgdata.data[4 * i + 2] = 19;    // BLUE (0-255)
+    } else if (terrain[i] >= 0.6 * 3) {
+        imgdata.data[4 * i] = 205;    // RED (0-255)
+        imgdata.data[4 * i + 1] = 133;    // GREEN (0-255)
+        imgdata.data[4 * i + 2] = 63;    // BLUE (0-255)
+    } else if (terrain[i] >= 0.5 * 3) {
+        imgdata.data[4 * i] = 34;    // RED (0-255)
+        imgdata.data[4 * i + 1] = 139;    // GREEN (0-255)
+        imgdata.data[4 * i + 2] = 34;    // BLUE (0-255)
+    } else if (terrain[i] >= 0.4 * 3) {
+        imgdata.data[4 * i] = 0;    // RED (0-255)
+        imgdata.data[4 * i + 1] = 169;    // GREEN (0-255)
+        imgdata.data[4 * i + 2] = 60;    // BLUE (0-255)
+    } else if (terrain[i] >= 0.3 * 3) {
+        imgdata.data[4 * i] = 0;    // RED (0-255)
+        imgdata.data[4 * i + 1] = 255;    // GREEN (0-255)
+        imgdata.data[4 * i + 2] = 0;    // BLUE (0-255)
+    } else if (terrain[i] >= foodthreshold * 3) {
+        imgdata.data[4 * i] = 255;    // RED (0-255)
+        imgdata.data[4 * i + 1] = 255;    // GREEN (0-255)
+        imgdata.data[4 * i + 2] = 102;    // BLUE (0-255)
     } else if (terrain[i] >= threshold) {
-        imgdata.data[4*i] = 0;    // RED (0-255)
-        imgdata.data[4*i+1] = 0;    // GREEN (0-255)
-        imgdata.data[4*i+2] = 255;    // BLUE (0-255)
+        imgdata.data[4 * i] = 0;    // RED (0-255)
+        imgdata.data[4 * i + 1] = 0;    // GREEN (0-255)
+        imgdata.data[4 * i + 2] = 255;    // BLUE (0-255)
     } else {
-        imgdata.data[4*i] = 0;    // RED (0-255)
-        imgdata.data[4*i+1] = 0;    // GREEN (0-255)
-        imgdata.data[4*i+2] = 150;    // BLUE (0-255)
+        imgdata.data[4 * i] = 0;    // RED (0-255)
+        imgdata.data[4 * i + 1] = 0;    // GREEN (0-255)
+        imgdata.data[4 * i + 2] = 150;    // BLUE (0-255)
     }
-    imgdata.data[4*i+3] = 255;  // APLHA (0-255)
+    imgdata.data[4 * i + 3] = 255;  // APLHA (0-255)
 }
 
 var total = 1;
@@ -198,16 +198,16 @@ let droppedFood = new Array(1);
 droppedFood[0] = new Food(canvas.width, canvas.height);
 
 for (let index = 0; index < evolis.length; index++) {
-    var evox,evoy;
+    var evox, evoy;
     do {
         do {
-            evox = (Math.random() * canvas.width-10)+1;
-        } while (evox >= (canvas.width-10) || evox <= 10 );
+            evox = (Math.random() * canvas.width - 10) + 1;
+        } while (evox >= (canvas.width - 10) || evox <= 10);
         do {
-            evoy = (Math.random() * canvas.height-10)+1;
-        } while (evoy >= (canvas.height-10) || evoy <= 10);
-    } while (getTerrainHeightValue(evox,evoy) <= 0.2);
-    evolis[index] = new Evoli(total++,evox, evoy, Math.random() * 5);
+            evoy = (Math.random() * canvas.height - 10) + 1;
+        } while (evoy >= (canvas.height - 10) || evoy <= 10);
+    } while (getTerrainHeightValue(evox, evoy) <= 0.2);
+    evolis[index] = new Evoli(total++, evox, evoy, Math.random() * 5);
 }
 
 window.requestAnimationFrame(gameLoop);
@@ -232,44 +232,52 @@ function update(delta) {
     for (let index = 0; index < evolis.length; index++) {
         var evoli = evolis[index];
         evoli.update(delta);
-        if (evoli.health <=0) {
+        if (evoli.health <= 0) {
             evolis.splice(index, 1);
         }
     }
 
     for (let index = 0; index < evolis.length; index++) {
         var evoli = evolis[index];
-        if (evoli.health<= 80) {
+        if (evoli.health <= 90 && droppedFood.length >= 1) {
+            let closestFoodIndex = -1;
+            let closestFoodDistance = 5000;
             for (let index = 0; index < droppedFood.length; index++) {
                 let food = droppedFood[index];
-                if (calcDistance(evoli.x, evoli.y, food.x, food.y) < evoli.eyeradius) {
-                    var newPos = moveToPoint(food.x,food.y,evoli.x,evoli.y, Math.abs(evoli.tempSpeed));
-                    evoli.xspeed = newPos[0];
-                    evoli.yspeed = newPos[1];
+                let foodDistance = calcDistance(evoli.x, evoli.y, food.x, food.y);
+                if (foodDistance < evoli.eyeradius && foodDistance <= closestFoodDistance) {
+                    closestFoodDistance = foodDistance;
+                    closestFoodIndex = index;
                 }
             }
 
-            if (droppedFood.length>=1) {
-                let index = droppedFood.length;
-                while (index--) {
-                    let food = droppedFood[index];
-                    if (Math.abs(Math.abs(evoli.x) - (Math.abs(food.x))) < 5 && Math.abs(Math.abs(evoli.y) - Math.abs(food.y)) < 5) {
-                        evoli.health += 30;
-                        evoli.ate++;
-                        evoli.hungry = 0;
-                        if (evoli.health > 100) {
-                            evoli.health = 100;
-                        }
-                        droppedFood.splice(index, 1);
+            if (closestFoodIndex != -1) {
+                let desiredFood = droppedFood[closestFoodIndex];
+                var newPos = moveToPoint(desiredFood.x, desiredFood.y, evoli.x, evoli.y, Math.abs(evoli.tempSpeed));
+                evoli.xspeed = newPos[0];
+                evoli.yspeed = newPos[1];
+            }
+
+            let index = droppedFood.length;
+            while (index--) {
+                let food = droppedFood[index];
+                if (Math.abs(Math.abs(evoli.x) - (Math.abs(food.x))) < 5 && Math.abs(Math.abs(evoli.y) - Math.abs(food.y)) < 5) {
+                    evoli.health += 30;
+                    evoli.ate++;
+                    evoli.hungry = 0;
+                    if (evoli.health > 100) {
+                        evoli.health = 100;
                     }
+                    droppedFood.splice(index, 1);
                 }
             }
+
         }
     }
 
-    if (droppedFood.length==0) {
+    if (droppedFood.length == 0) {
         droppedFood[0] = new Food(canvas.width, canvas.height);
-    } 
+    }
 
     // reproduce
 
@@ -277,14 +285,14 @@ function update(delta) {
     for (let index = 0; index < evolis.length; index++) {
         var evoliFather = evolis[index];
         for (let index1 = 0; index1 < evolis.length; index1++) {
-            if (index!=index1) {
+            if (index != index1) {
                 var evoliMother = evolis[index1];
-                if (Math.abs(evoliFather.x-evoliMother.x) < 5 && Math.abs(evoliFather.y-evoliMother.y) < 5) {
+                if (Math.abs(evoliFather.x - evoliMother.x) < 5 && Math.abs(evoliFather.y - evoliMother.y) < 5) {
                     if (evoliFather.health > 50 && evoliMother.health > 50) {
                         var babyEvoli = new Evoli(total++, evoliFather.x, evoliMother.y, (Math.abs(evoliFather.tempSpeed) + Math.abs(evoliMother.tempSpeed)));
-                        evoliMother.health-=25;
-                        evoliFather.x+=5;
-                        evoliMother.x+=-5;
+                        evoliMother.health -= 25;
+                        evoliFather.x += 5;
+                        evoliMother.x += -5;
                         newEvolis.push(babyEvoli);
                         break;
                     }
@@ -320,7 +328,7 @@ function draw() {
         ctx.fillStyle = "red";
         ctx.fillRect(evoli.x, evoli.y, 5, 5)
         ctx.font = "10px Arial";
-        ctx.fillText("#" + evoli.number, evoli.x+10, evoli.y+5);
+        ctx.fillText("#" + evoli.number, evoli.x + 10, evoli.y + 5);
     }
 
     // GUI
@@ -328,11 +336,11 @@ function draw() {
 }
 
 function drawTerrain() {
-    ctx.putImageData(imgdata,0,0);
+    ctx.putImageData(imgdata, 0, 0);
 }
 
-function dropFood(x,y) {
-    if (getTerrainHeightValue(x,y) >= foodthreshold*3) {
+function dropFood(x, y) {
+    if (getTerrainHeightValue(x, y) >= foodthreshold * 3) {
         let food = new Food(canvas.width, canvas.height);
         food.x = x;
         food.y = y;
@@ -341,7 +349,7 @@ function dropFood(x,y) {
 }
 
 function getTerrainHeightValue(x, y) {
-    return (simplex.noise2D(x/scale, y/scale) + simplexDistortion.noise2D(x/(scale/3), y/(scale/3)) + simplexDistortion2.noise2D(x/(scale/2), y/(scale/2)));
+    return (simplex.noise2D(x / scale, y / scale) + simplexDistortion.noise2D(x / (scale / 3), y / (scale / 3)) + simplexDistortion2.noise2D(x / (scale / 2), y / (scale / 2)));
 }
 
 
@@ -350,11 +358,11 @@ function drawGUI() {
         var evoli = evolis[index];
         ctxGUI.fillStyle = "white";
         ctxGUI.font = "15px Arial";
-        ctxGUI.fillText("Evoli #" + evoli.number + " (S:" + Math.abs(evoli.tempSpeed) + ") (A:" + evoli.ate +") (H:" + roundDec(evoli.health, 2) + ")", 10, ((index + 1) * 35)-8);
+        ctxGUI.fillText("Evoli #" + evoli.number + " (S:" + Math.abs(evoli.tempSpeed) + ") (A:" + evoli.ate + ") (H:" + roundDec(evoli.health, 2) + ")", 10, ((index + 1) * 35) - 8);
         ctxGUI.fillStyle = "red";
         ctxGUI.fillRect(10, (index + 1) * 35, 200, 8);
         ctxGUI.fillStyle = "green";
-        ctxGUI.fillRect(10, (index + 1) * 35, evoli.health*2, 8)
+        ctxGUI.fillRect(10, (index + 1) * 35, evoli.health * 2, 8)
     }
 }
 
@@ -368,18 +376,18 @@ function calcDistance(x1, y1, x2, y2) {
     return Math.sqrt(a * a + b * b);
 }
 
-function moveToPoint(xToGo,yToGo,xCurrent,yCurrent, speed) {
+function moveToPoint(xToGo, yToGo, xCurrent, yCurrent, speed) {
     var delta_x = xToGo - xCurrent;
     var delta_y = yToGo - yCurrent;
-    var goal_dist = Math.sqrt( (delta_x * delta_x) + (delta_y * delta_y) )
-    
-        var ratio = speed / goal_dist;
-        var x_move = ratio * delta_x;  
-        var y_move = ratio * delta_y;
-        //var new_x_pos = x_move + xCurrent; 
-        //var new_y_pos = y_move + yCurrent;
-        return [x_move,y_move];
-    
+    var goal_dist = Math.sqrt((delta_x * delta_x) + (delta_y * delta_y))
+
+    var ratio = speed / goal_dist;
+    var x_move = ratio * delta_x;
+    var y_move = ratio * delta_y;
+    //var new_x_pos = x_move + xCurrent; 
+    //var new_y_pos = y_move + yCurrent;
+    return [x_move, y_move];
+
 }
 
 function round(v) {
@@ -387,7 +395,7 @@ function round(v) {
 }
 
 function roundDec(value, decimals) {
-    return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+    return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
 }
 
 function valBetween(v, min, max) {
