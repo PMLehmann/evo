@@ -140,7 +140,7 @@ var simplexDistortion = new SimplexNoise();
 var simplexDistortion2 = new SimplexNoise();
 for (let line = 0; line < canvas.height; line++) {
     for (let pixel = 0; pixel < canvas.width; pixel++) {
-        terrain[(line * canvas.width) + pixel] = simplex.noise2D(pixel / scale, line / scale) + simplexDistortion.noise2D(pixel / (scale / 3), line / (scale / 3)) + simplexDistortion2.noise2D(pixel / (scale / 2), line / (scale / 2));
+        terrain[(line * canvas.width) + pixel] = simplex.noise2D(pixel / scale, line / scale) + simplexDistortion.noise2D(pixel / (scale / 3), line / (scale / 3)) + Math.sin(simplexDistortion2.noise2D(pixel / (scale / 2), line / (scale / 2)));
     }
 }
 var imgdata = ctx.getImageData(0, 0, canvas.width, canvas.height);
