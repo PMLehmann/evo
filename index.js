@@ -1,6 +1,6 @@
 // Setup
 let scale = 756;
-let threshold = 0.05;
+let threshold = 0.005;
 let foodthreshold = 0.2;
 let mainDivWidth = document.getElementById('main').clientWidth;
 let canvas = document.getElementById('canvas');
@@ -239,27 +239,29 @@ function update(delta) {
 
     for (let index = 0; index < evolis.length; index++) {
         var evoli = evolis[index];
-        for (let index = 0; index < droppedFood.length; index++) {
-            let food = droppedFood[index];
-            if (calcDistance(evoli.x, evoli.y, food.x, food.y) < evoli.eyeradius) {
-                var newPos = moveToPoint(food.x,food.y,evoli.x,evoli.y, Math.abs(evoli.tempSpeed));
-                evoli.xspeed = newPos[0];
-                evoli.yspeed = newPos[1];
-            }
-        }
-
-        if (droppedFood.length>=1) {
-            let index = droppedFood.length;
-            while (index--) {
+        if (evoli.health<= 70) {
+            for (let index = 0; index < droppedFood.length; index++) {
                 let food = droppedFood[index];
-                if (Math.abs(Math.abs(evoli.x) - (Math.abs(food.x))) < 5 && Math.abs(Math.abs(evoli.y) - Math.abs(food.y)) < 5) {
-                    evoli.health += 30;
-                    evoli.ate++;
-                    evoli.hungry = 0;
-                    if (evoli.health > 100) {
-                        evoli.health = 100;
+                if (calcDistance(evoli.x, evoli.y, food.x, food.y) < evoli.eyeradius) {
+                    var newPos = moveToPoint(food.x,food.y,evoli.x,evoli.y, Math.abs(evoli.tempSpeed));
+                    evoli.xspeed = newPos[0];
+                    evoli.yspeed = newPos[1];
+                }
+            }
+
+            if (droppedFood.length>=1) {
+                let index = droppedFood.length;
+                while (index--) {
+                    let food = droppedFood[index];
+                    if (Math.abs(Math.abs(evoli.x) - (Math.abs(food.x))) < 5 && Math.abs(Math.abs(evoli.y) - Math.abs(food.y)) < 5) {
+                        evoli.health += 30;
+                        evoli.ate++;
+                        evoli.hungry = 0;
+                        if (evoli.health > 100) {
+                            evoli.health = 100;
+                        }
+                        droppedFood.splice(index, 1);
                     }
-                    droppedFood.splice(index, 1);
                 }
             }
         }
