@@ -239,7 +239,7 @@ function update(delta) {
 
     for (let index = 0; index < evolis.length; index++) {
         var evoli = evolis[index];
-        if (evoli.health<= 70) {
+        if (evoli.health<= 80) {
             for (let index = 0; index < droppedFood.length; index++) {
                 let food = droppedFood[index];
                 if (calcDistance(evoli.x, evoli.y, food.x, food.y) < evoli.eyeradius) {
