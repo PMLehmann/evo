@@ -1,7 +1,8 @@
 // Setup
-let scale = 756;
-let threshold = 0.005;
-let foodthreshold = 0.2;
+const scale = 756;
+const threshold = 0.005;
+const foodthreshold = 0.2;
+
 let mainDivWidth = document.getElementById('main').clientWidth;
 let canvas = document.getElementById('canvas');
 console.log(main.width)
@@ -347,9 +348,12 @@ function draw() {
 
 function showWinner() {
     let evoli = evolis[0];
-    ctx.fillStyle = "red";
     ctx.font = "35px Arial";
+    ctx.fillStyle = "black";
     ctx.fillText("Evoli #" + evoli.number + " (S:" + Math.abs(evoli.tempSpeed) + ") (A:" + evoli.ate + ") (H:" + roundDec(evoli.health, 2) + ") survived!", 20, 55);
+    ctx.fillStyle = "white";
+    ctx.fillText("Evoli #" + evoli.number + " (S:" + Math.abs(evoli.tempSpeed) + ") (A:" + evoli.ate + ") (H:" + roundDec(evoli.health, 2) + ") survived!", 18, 53);
+
 }
 
 function drawTerrain() {
