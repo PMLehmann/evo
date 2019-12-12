@@ -349,7 +349,7 @@ function dropFood(x, y) {
 }
 
 function getTerrainHeightValue(x, y) {
-    return (simplex.noise2D(x / scale, y / scale) + simplexDistortion.noise2D(x / (scale / 3), y / (scale / 3)) + simplexDistortion2.noise2D(x / (scale / 2), y / (scale / 2)));
+    return (simplex.noise2D(x / scale, y / scale) + simplexDistortion.noise2D(x / (scale / 3), y / (scale / 3)) + Math.sin(simplexDistortion2.noise2D(x / (scale / 2), y / (scale / 2))));
 }
 
 
