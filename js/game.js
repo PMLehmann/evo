@@ -40,6 +40,13 @@ class Food {
             } while (this.y >= (height - 10) || this.y <= 10);
         } while (getTerrainHeightValue(this.x, this.y) <= foodthreshold * 3);
     }
+    
+    draw(ctx) {
+        ctx.fillStyle = "black";
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 3, 0, Math.PI*2, true);
+        ctx.fill();
+    }
 }
 
 class Evoli {
@@ -131,6 +138,13 @@ class Evoli {
             this.health = 100;
         }
     }
+
+    draw(ctx) {
+        ctx.fillStyle = "red";
+        ctx.fillRect(this.x, this.y, 5, 5)
+        ctx.font = "10px Arial";
+        ctx.fillText("#" + this.number, this.x + 10, this.y + 5);
+    }
 }
 
 // Game
@@ -210,22 +224,24 @@ for (let index = 0; index < evolis.length; index++) {
     evolis[index] = new Evoli(total++, evox, evoy, Math.random() * 5);
 }
 
-window.requestAnimationFrame(gameLoop);
-
 function gameLoop(timestamp) {
-    if (timestamp < lastFrameTimeMs + (1000 / maxFPS)) {
-        requestAnimationFrame(gameLoop);
-        return;
-    }
-    delta += timestamp - lastFrameTimeMs;
-    lastFrameTimeMs = timestamp;
+    if (evolis.length <= 1) {
+        showWinner()
+    } else {
+        if (timestamp < lastFrameTimeMs + (1000 / maxFPS)) {
+            requestAnimationFrame(gameLoop);
+            return;
+        }
+        delta += timestamp - lastFrameTimeMs;
+        lastFrameTimeMs = timestamp;
 
-    while (delta >= timestep) {
-        update(timestep);
-        delta -= timestep;
+        while (delta >= timestep) {
+            update(timestep);
+            delta -= timestep;
+        }
+        draw();
+        window.requestAnimationFrame(gameLoop);
     }
-    draw()
-    window.requestAnimationFrame(gameLoop);
 }
 
 function update(delta) {
@@ -261,7 +277,7 @@ function update(delta) {
             let index = droppedFood.length;
             while (index--) {
                 let food = droppedFood[index];
-                if (Math.abs(Math.abs(evoli.x) - (Math.abs(food.x))) < 5 && Math.abs(Math.abs(evoli.y) - Math.abs(food.y)) < 5) {
+                if (Math.abs(Math.abs(evoli.x) - (Math.abs(food.x))) < 3 && Math.abs(Math.abs(evoli.y) - Math.abs(food.y)) < 3) {
                     evoli.health += 30;
                     evoli.ate++;
                     evoli.hungry = 0;
@@ -318,21 +334,22 @@ function draw() {
     drawTerrain();
 
     for (let index = 0; index < droppedFood.length; index++) {
-        let food = droppedFood[index];
-        ctx.fillStyle = "black";
-        ctx.fillRect(food.x, food.y, 5, 5)
+        droppedFood[index].draw(ctx);
     }
 
     for (let index = 0; index < evolis.length; index++) {
-        var evoli = evolis[index];
-        ctx.fillStyle = "red";
-        ctx.fillRect(evoli.x, evoli.y, 5, 5)
-        ctx.font = "10px Arial";
-        ctx.fillText("#" + evoli.number, evoli.x + 10, evoli.y + 5);
+        evolis[index].draw(ctx);
     }
 
     // GUI
     drawGUI();
+}
+
+function showWinner() {
+    let evoli = evolis[0];
+    ctx.fillStyle = "red";
+    ctx.font = "35px Arial";
+    ctx.fillText("Evoli #" + evoli.number + " (S:" + Math.abs(evoli.tempSpeed) + ") (A:" + evoli.ate + ") (H:" + roundDec(evoli.health, 2) + ") survived!", 20, 55);
 }
 
 function drawTerrain() {
@@ -366,38 +383,4 @@ function drawGUI() {
     }
 }
 
-
-//misc
-
-function calcDistance(x1, y1, x2, y2) {
-    var a = x1 - x2;
-    var b = y1 - y2;
-
-    return Math.sqrt(a * a + b * b);
-}
-
-function moveToPoint(xToGo, yToGo, xCurrent, yCurrent, speed) {
-    var delta_x = xToGo - xCurrent;
-    var delta_y = yToGo - yCurrent;
-    var goal_dist = Math.sqrt((delta_x * delta_x) + (delta_y * delta_y))
-
-    var ratio = speed / goal_dist;
-    var x_move = ratio * delta_x;
-    var y_move = ratio * delta_y;
-    //var new_x_pos = x_move + xCurrent; 
-    //var new_y_pos = y_move + yCurrent;
-    return [x_move, y_move];
-
-}
-
-function round(v) {
-    return (v >= 0 || -1) * Math.round(Math.abs(v));
-}
-
-function roundDec(value, decimals) {
-    return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
-}
-
-function valBetween(v, min, max) {
-    return (Math.min(max, Math.max(min, v)));
-}
+window.requestAnimationFrame(gameLoop);
