@@ -8,6 +8,12 @@ body {
    font: 15px Arial;
 }
 
+.box {
+   background-color: #333;
+   border: 1px solid #444;
+   box-shadow: 0px 0px 10px #222;
+}
+
 #main {
    margin: 20px auto;
    min-width: 600px;
@@ -17,7 +23,6 @@ body {
 
 #infoBox {
    clear: left;
-    background-color: #333;
     margin: 30px auto;
     min-width: 600px;
     width: 100%;
@@ -30,11 +35,9 @@ body {
 } 
 
 #canvas {
-   background-color: #333;
    float: left;
 }
 
 #canvasGUI {
-   background-color: #333;
    float: right;
 }

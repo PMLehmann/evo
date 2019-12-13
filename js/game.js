@@ -2,14 +2,23 @@
 const scale = 756;
 const threshold = 0.005;
 const foodthreshold = 0.2;
+const canvas = document.getElementById('canvas');
+const canvasGUI = document.getElementById("canvasGUI");
+
+var lastFrameTimeMs = 0,
+    maxFPS = 60,
+    delta = 0,
+    timestep = 1000 / 60;
 
 let mainDivWidth = document.getElementById('main').clientWidth;
-let canvas = document.getElementById('canvas');
-console.log(main.width)
 let finalwidth = valBetween(mainDivWidth * 0.71, 300, 710);
 canvas.setAttribute('width', finalwidth);
 let finalHeight = valBetween(window.innerHeight - 40, 400, finalwidth)
 canvas.setAttribute('height', finalHeight);
+canvasGUI.setAttribute('height', finalHeight);
+let ctx = canvas.getContext('2d');
+let ctxGUI = canvasGUI.getContext('2d');
+
 let canvasLeft = canvas.offsetLeft;
 let canvasTop = canvas.offsetTop;
 canvas.addEventListener('click', function (event) {
@@ -19,15 +28,6 @@ canvas.addEventListener('click', function (event) {
     dropFood(x, y);
 
 }, false);
-let ctx = canvas.getContext('2d');
-let canvasGUI = document.getElementById("canvasGUI");
-canvasGUI.setAttribute('height', finalHeight);
-let ctxGUI = canvasGUI.getContext('2d');
-
-var lastFrameTimeMs = 0,
-    maxFPS = 60,
-    delta = 0,
-    timestep = 1000 / 60;
 
 class Food {
     constructor(width, height) {
@@ -155,7 +155,7 @@ var simplexDistortion = new SimplexNoise();
 var simplexDistortion2 = new SimplexNoise();
 for (let line = 0; line < canvas.height; line++) {
     for (let pixel = 0; pixel < canvas.width; pixel++) {
-        terrain[(line * canvas.width) + pixel] = simplex.noise2D(pixel / scale, line / scale) + simplexDistortion.noise2D(pixel / (scale / 3), line / (scale / 3)) + Math.sin(simplexDistortion2.noise2D(pixel / (scale / 2), line / (scale / 2)));
+        terrain[(line * canvas.width) + pixel] =  getTerrainHeightValue(pixel, line);
     }
 }
 var imgdata = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -212,6 +212,7 @@ let evolis = new Array(10);
 let droppedFood = new Array(1);
 droppedFood[0] = new Food(canvas.width, canvas.height);
 
+// spawn evolis
 for (let index = 0; index < evolis.length; index++) {
     var evox, evoy;
     do {
