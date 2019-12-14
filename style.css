@@ -30,9 +30,20 @@ body {
     display: inline-block;
 }
 
+#info {
+   float: left;
+   width: 40%;
+}
+
 #infoBox p, #infoBox h1 {
    padding: 0px 10px;
 } 
+
+#ad {
+   width:50%;
+   margin: 10px;
+   float: right;
+}
 
 #canvas {
    float: left;
