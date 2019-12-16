@@ -6,8 +6,6 @@ function moveToPoint(xToGo, yToGo, xCurrent, yCurrent, speed) {
     var ratio = speed / goal_dist;
     var x_move = ratio * delta_x;
     var y_move = ratio * delta_y;
-    //var new_x_pos = x_move + xCurrent; 
-    //var new_y_pos = y_move + yCurrent;
     return [x_move, y_move];
 }
 

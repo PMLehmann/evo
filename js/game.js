@@ -67,10 +67,13 @@ class Evoli {
         }
         this.xspeed = this.tempSpeed;
         this.yspeed = this.tempSpeed;
-        this.eyeradius = (Math.random() * 250) + 100;
+        this.eyeradius = (Math.random() * 100) + 100;
         this.health = 50;
         this.hungry = 0;
         this.ate = 0;
+        this.desiredFood;
+        this.pathToFood = [];
+        this.unreachableFoods = [];
     }
 
     calcSpeed() {
@@ -89,42 +92,58 @@ class Evoli {
         var originalx = this.x;
         var originaly = this.y;
 
-        this.x = (this.x + this.xspeed)
-        this.y = (this.y + this.yspeed)
+        if (this.pathToFood.length) {
+            for (let index = 0; index < Math.abs(round(this.tempSpeed)); index++) {
+                if (this.pathToFood.length > 0) {
+                    let node = this.pathToFood[0];
+                    this.x = node.x;
+                    this.y = node.y;
+                    this.pathToFood.splice(node, 1);
+                } else {
+                    break;
+                }
+                
+            }
+        } else {
 
-        if (getTerrainHeightValue(this.x, this.y) <= threshold) {
-            if (getTerrainHeightValue(originalx + this.xspeed, originaly) >= threshold) {
-                this.x = originalx + this.xspeed;
-            } else {
-                this.x = originalx;
+            this.x = (this.x + this.xspeed)
+            this.y = (this.y + this.yspeed)
+
+            if (getTerrainHeightValue(this.x, this.y) <= threshold) {
+                if (getTerrainHeightValue(originalx + this.xspeed, originaly) >= threshold) {
+                    this.x = originalx + this.xspeed;
+                } else {
+                    this.x = originalx;
+                    this.xspeed = -this.xspeed;
+                }
+
+                if (getTerrainHeightValue(this.x, originaly + this.yspeed) >= threshold) {
+                    this.y = originaly + this.yspeed;
+                } else {
+                    this.y = originaly;
+                    this.yspeed = -this.yspeed;
+                }
+            }
+
+            if (this.x > (canvas.width - 5)) {
+                this.x = canvas.width - 5;
                 this.xspeed = -this.xspeed;
             }
 
-            if (getTerrainHeightValue(this.x, originaly + this.yspeed) >= threshold) {
-                this.y = originaly + this.yspeed;
-            } else {
-                this.y = originaly;
+            if (this.y > (canvas.height - 5)) {
+                this.y = canvas.height - 5;
                 this.yspeed = -this.yspeed;
             }
-        }
+            if (this.x < 0) {
+                this.x = 0
+                this.xspeed = -this.xspeed;
+            }
 
-        if (this.x > (canvas.width - 5)) {
-            this.x = canvas.width - 5;
-            this.xspeed = -this.xspeed;
-        }
+            if (this.y < 0) {
+                this.y = 0
+                this.yspeed = -this.yspeed;
+            }
 
-        if (this.y > (canvas.height - 5)) {
-            this.y = canvas.height - 5;
-            this.yspeed = -this.yspeed;
-        }
-        if (this.x < 0) {
-            this.x = 0
-            this.xspeed = -this.xspeed;
-        }
-
-        if (this.y < 0) {
-            this.y = 0
-            this.yspeed = -this.yspeed;
         }
 
         this.health -= this.hungry;
@@ -143,6 +162,11 @@ class Evoli {
     draw(ctx) {
         ctx.fillStyle = "red";
         ctx.fillRect(this.x, this.y, 5, 5)
+        ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.eyeradius, 0, Math.PI*2, true);
+        ctx.fill();
+        ctx.fillStyle = "red";
         ctx.font = "10px Arial";
         ctx.fillText("#" + this.number, this.x + 10, this.y + 5);
     }
@@ -153,9 +177,12 @@ var terrain = new Array(canvas.width * canvas.height);
 var simplex = new SimplexNoise();
 var simplexDistortion = new SimplexNoise();
 var simplexDistortion2 = new SimplexNoise();
+let nodes = new Array(canvas.width * canvas.height);
 for (let line = 0; line < canvas.height; line++) {
     for (let pixel = 0; pixel < canvas.width; pixel++) {
-        terrain[(line * canvas.width) + pixel] =  getTerrainHeightValue(pixel, line);
+        let height =  getTerrainHeightValue(pixel, line);
+        terrain[(line * canvas.width) + pixel] =  height;
+        nodes[(line * canvas.width) + pixel] =  new Node(pixel, line, getPassable(height));
     }
 }
 var imgdata = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -226,6 +253,7 @@ for (let index = 0; index < evolis.length; index++) {
     evolis[index] = new Evoli(total++, evox, evoy, Math.random() * 5);
 }
 
+
 function gameLoop(timestamp) {
     if (evolis.length <= 1) {
         showWinner()
@@ -258,27 +286,53 @@ function update(delta) {
     for (let index = 0; index < evolis.length; index++) {
         var evoli = evolis[index];
         if (evoli.health <= 90 && droppedFood.length >= 1) {
-            let closestFoodIndex = -1;
-            let closestFoodDistance = 5000;
-            for (let index = 0; index < droppedFood.length; index++) {
-                let food = droppedFood[index];
-                let foodDistance = calcDistance(evoli.x, evoli.y, food.x, food.y);
-                if (foodDistance < evoli.eyeradius && foodDistance <= closestFoodDistance) {
-                    closestFoodDistance = foodDistance;
-                    closestFoodIndex = index;
+            // check if desiredfood is still the closest
+
+            if(evoli.desiredFood != null){
+                for (let index1 = 0; index1 < droppedFood.length; index1++) {
+                    let food = droppedFood[index1];
+                    let distanceToFood = calcDistance(evoli.x, evoli.y, food.x, food.y);
+                    if(distanceToFood <= evoli.eyeradius) {
+                        if (calcDistance(evoli.x, evoli.y, evoli.desiredFood.x, evoli.desiredFood.y) > distanceToFood) {
+                            evoli.desiredFood = null;
+                        }
+                    }
                 }
             }
 
-            if (closestFoodIndex != -1) {
-                let desiredFood = droppedFood[closestFoodIndex];
-                var newPos = moveToPoint(desiredFood.x, desiredFood.y, evoli.x, evoli.y, Math.abs(evoli.tempSpeed));
-                evoli.xspeed = newPos[0];
-                evoli.yspeed = newPos[1];
+            if (evoli.desiredFood == null || !droppedFood.includes(evoli.desiredFood, 0)) {
+                evoli.desiredFood = null;
+                evoli.pathToFood = [];
+                let closestFoodIndex = -1;
+                let closestFoodDistance = 5000;
+                for (let index = 0; index < droppedFood.length; index++) {
+                    let food = droppedFood[index];
+                    if (evoli.unreachableFoods.some(foodInList => foodInList.x == food.x && foodInList.y == food.y)) {
+                        continue;
+                    }
+                    let foodDistance = calcDistance(evoli.x, evoli.y, food.x, food.y);
+                    if (foodDistance < evoli.eyeradius && foodDistance <= closestFoodDistance) {
+                        closestFoodDistance = foodDistance;
+                        closestFoodIndex = index;
+                    }
+                }
+
+                if (closestFoodIndex != -1) {
+                    evoli.desiredFood = droppedFood[closestFoodIndex];
+                    evoli.pathToFood = calculatePath(getNode(evoli.x, evoli.y) ,getNode(evoli.desiredFood.x, evoli.desiredFood.y), nodes, canvas.width, canvas.height);
+                    if (evoli.pathToFood == []) {
+                        evoli.unreachableFoods.push(droppedFood[closestFoodIndex]);
+                        evoli.desiredFood = null;
+                    }
+                }
             }
 
             let index = droppedFood.length;
             while (index--) {
                 let food = droppedFood[index];
+                if (evoli.unreachableFoods.some(foodInList => foodInList.x == food.x && foodInList.y == food.y)) {
+                    continue;
+                }
                 if (Math.abs(Math.abs(evoli.x) - (Math.abs(food.x))) < 3 && Math.abs(Math.abs(evoli.y) - Math.abs(food.y)) < 3) {
                     evoli.health += 30;
                     evoli.ate++;
@@ -348,12 +402,19 @@ function draw() {
 }
 
 function showWinner() {
-    let evoli = evolis[0];
     ctx.font = "35px Arial";
-    ctx.fillStyle = "black";
-    ctx.fillText("Evoli #" + evoli.number + " (S:" + Math.abs(evoli.tempSpeed) + ") (A:" + evoli.ate + ") (H:" + roundDec(evoli.health, 2) + ") survived!", 20, 55);
-    ctx.fillStyle = "white";
-    ctx.fillText("Evoli #" + evoli.number + " (S:" + Math.abs(evoli.tempSpeed) + ") (A:" + evoli.ate + ") (H:" + roundDec(evoli.health, 2) + ") survived!", 18, 53);
+    if (evolis.length) {
+        let evoli = evolis[0];    
+        ctx.fillStyle = "black";
+        ctx.fillText("Evoli #" + evoli.number + " (S:" + Math.abs(evoli.tempSpeed) + ") (A:" + evoli.ate + ") (H:" + roundDec(evoli.health, 2) + ") survived!", 20, 55);
+        ctx.fillStyle = "white";
+        ctx.fillText("Evoli #" + evoli.number + " (S:" + Math.abs(evoli.tempSpeed) + ") (A:" + evoli.ate + ") (H:" + roundDec(evoli.health, 2) + ") survived!", 18, 53);
+    } else {
+        ctx.fillStyle = "black";
+        ctx.fillText("No indiviual survived!", 20, 55);
+        ctx.fillStyle = "white";
+        ctx.fillText("No indiviual survived!", 18, 53);
+    }
 
 }
 
@@ -374,6 +435,17 @@ function getTerrainHeightValue(x, y) {
     return (simplex.noise2D(x / scale, y / scale) + simplexDistortion.noise2D(x / (scale / 3), y / (scale / 3)) + Math.sin(simplexDistortion2.noise2D(x / (scale / 2), y / (scale / 2))));
 }
 
+function getPassable(value) {
+    if (value < threshold) {
+        return false;
+    }
+    return true;
+}
+
+function getNode(x, y) {
+    return nodes[(round(y) * canvas.width)+ round(x)];
+}
+
 
 function drawGUI() {
     for (let index = 0; index < evolis.length; index++) {
@@ -386,6 +458,10 @@ function drawGUI() {
         ctxGUI.fillStyle = "green";
         ctxGUI.fillRect(10, (index + 1) * 35, evoli.health * 2, 8)
     }
+}
+
+function calculatePath(_start, _end, _nodes, _mapWidth, _mapHeight) {
+    return aStar(_start,_end, _nodes, _mapWidth, _mapHeight);
 }
 
 window.requestAnimationFrame(gameLoop);
