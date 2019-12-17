@@ -32,7 +32,7 @@ body {
 
 #info {
    float: left;
-   width: 55%;
+   width: 50%;
 }
 
 #infoBox p, #infoBox h1 {
@@ -51,7 +51,7 @@ body {
 
 
 #ad {
-   width:40%;
+   width:45%;
    margin: 10px;
    float: right;
 }

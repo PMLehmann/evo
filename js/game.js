@@ -13,7 +13,7 @@ var lastFrameTimeMs = 0,
 let mainDivWidth = document.getElementById('main').clientWidth;
 let finalwidth = valBetween(mainDivWidth * 0.71, 300, 710);
 canvas.setAttribute('width', finalwidth);
-let finalHeight = valBetween(window.innerHeight - 40, 400, finalwidth+600)
+let finalHeight = valBetween(window.innerHeight - 40, 400, finalwidth)
 canvas.setAttribute('height', finalHeight);
 canvasGUI.setAttribute('height', finalHeight);
 let ctx = canvas.getContext('2d');
