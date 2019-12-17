@@ -51,7 +51,7 @@ function aStar(start, end, data, _mapWidth, _mapHeight, _radius) {
 
     while (!openList.isEmpty) {
         let currentTime = performance.now()-startTime;
-        if (currentTime >30) { // to be removeed after optimizing
+        if (currentTime >50) { // to be removeed after optimizing
             console.log("Exceeding time limit, no valid path found in time. (" + currentTime + ")")
             return []
         }
@@ -157,7 +157,7 @@ function expandNode(currentNode) {
         let walkCost = 1;
 
         if (currentNode.x != node.x && currentNode.y != node.y) {
-            walkCost = 0.6;
+            walkCost = 1.1;
         }
 
         temp.g = currentNode.g + walkCost;
