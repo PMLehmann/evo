@@ -1,5 +1,5 @@
 // Setup
-const scale = 756;
+const scale = 700;
 const threshold = 0.005;
 const foodthreshold = 0.2;
 const canvas = document.getElementById('canvas');
@@ -39,7 +39,7 @@ class Food {
             do {
                 this.y = (Math.random() * height - 10) + 1;
             } while (this.y >= (height - 10) || this.y <= 10);
-        } while (getTerrainHeightValue(this.x, this.y) <= foodthreshold * 3);
+        } while (getTerrainHeightValue(this.x, this.y) <= foodthreshold);
     }
     
     draw(ctx) {
@@ -109,7 +109,7 @@ class Evoli {
             this.x = (this.x + this.xspeed)
             this.y = (this.y + this.yspeed)
 
-            if (getTerrainHeightValue(this.x, this.y) <= threshold) {
+            if (getTerrainHeightValue(this.x, this.y) < threshold) {
                 if (getTerrainHeightValue(originalx + this.xspeed, originaly) >= threshold) {
                     this.x = originalx + this.xspeed;
                 } else {
@@ -190,46 +190,46 @@ var imgdatalen = imgdata.data.length;
 
 
 for (var i = 0; i < imgdatalen / 4; i++) {  //iterate over every pixel in the canvas
-    if (terrain[i] >= 0.85 * 3) {
-        imgdata.data[4 * i] = 255;    // RED (0-255)
-        imgdata.data[4 * i + 1] = 255;    // GREEN (0-255)
-        imgdata.data[4 * i + 2] = 255;    // BLUE (0-255)
-    } else if (terrain[i] >= 0.75 * 3) {
-        imgdata.data[4 * i] = 109;    // RED (0-255)
-        imgdata.data[4 * i + 1] = 39;    // GREEN (0-255)
-        imgdata.data[4 * i + 2] = 0;    // BLUE (0-255)
-    } else if (terrain[i] >= 0.70 * 3) {
-        imgdata.data[4 * i] = 139;    // RED (0-255)
-        imgdata.data[4 * i + 1] = 69;    // GREEN (0-255)
-        imgdata.data[4 * i + 2] = 19;    // BLUE (0-255)
-    } else if (terrain[i] >= 0.6 * 3) {
-        imgdata.data[4 * i] = 205;    // RED (0-255)
-        imgdata.data[4 * i + 1] = 133;    // GREEN (0-255)
-        imgdata.data[4 * i + 2] = 63;    // BLUE (0-255)
-    } else if (terrain[i] >= 0.5 * 3) {
-        imgdata.data[4 * i] = 34;    // RED (0-255)
-        imgdata.data[4 * i + 1] = 139;    // GREEN (0-255)
-        imgdata.data[4 * i + 2] = 34;    // BLUE (0-255)
-    } else if (terrain[i] >= 0.4 * 3) {
-        imgdata.data[4 * i] = 0;    // RED (0-255)
-        imgdata.data[4 * i + 1] = 169;    // GREEN (0-255)
-        imgdata.data[4 * i + 2] = 60;    // BLUE (0-255)
-    } else if (terrain[i] >= 0.3 * 3) {
-        imgdata.data[4 * i] = 0;    // RED (0-255)
-        imgdata.data[4 * i + 1] = 255;    // GREEN (0-255)
-        imgdata.data[4 * i + 2] = 0;    // BLUE (0-255)
-    } else if (terrain[i] >= foodthreshold * 3) {
-        imgdata.data[4 * i] = 255;    // RED (0-255)
-        imgdata.data[4 * i + 1] = 255;    // GREEN (0-255)
-        imgdata.data[4 * i + 2] = 102;    // BLUE (0-255)
-    } else if (terrain[i] >= threshold) {
-        imgdata.data[4 * i] = 0;    // RED (0-255)
-        imgdata.data[4 * i + 1] = 0;    // GREEN (0-255)
-        imgdata.data[4 * i + 2] = 255;    // BLUE (0-255)
-    } else {
+    if (terrain[i] < threshold || Number.isNaN(terrain[i])) {
         imgdata.data[4 * i] = 0;    // RED (0-255)
         imgdata.data[4 * i + 1] = 0;    // GREEN (0-255)
         imgdata.data[4 * i + 2] = 150;    // BLUE (0-255)
+    } else if (terrain[i] < foodthreshold) {
+        imgdata.data[4 * i] = 0;    // RED (0-255)
+        imgdata.data[4 * i + 1] = 0;    // GREEN (0-255)
+        imgdata.data[4 * i + 2] = 255;    // BLUE (0-255)
+    } else if (terrain[i] < 0.3) { // Beach
+        imgdata.data[4 * i] = 255;    // RED (0-255)
+        imgdata.data[4 * i + 1] = 255;    // GREEN (0-255)
+        imgdata.data[4 * i + 2] = 102;    // BLUE (0-255)
+    } else if (terrain[i] < 0.4) { // Gras
+        imgdata.data[4 * i] = 0;    // RED (0-255)
+        imgdata.data[4 * i + 1] = 255;    // GREEN (0-255)
+        imgdata.data[4 * i + 2] = 0;    // BLUE (0-255)
+    } else if (terrain[i] < 0.5) { // forest
+        imgdata.data[4 * i] = 0;    // RED (0-255)
+        imgdata.data[4 * i + 1] = 169;    // GREEN (0-255)
+        imgdata.data[4 * i + 2] = 60;    // BLUE (0-255)
+    } else if (terrain[i] < 0.6) { // deep forest
+        imgdata.data[4 * i] = 34;    // RED (0-255)
+        imgdata.data[4 * i + 1] = 139;    // GREEN (0-255)
+        imgdata.data[4 * i + 2] = 34;    // BLUE (0-255)
+    } else if (terrain[i] < 0.7) { // low mountains
+        imgdata.data[4 * i] = 205;    // RED (0-255)
+        imgdata.data[4 * i + 1] = 133;    // GREEN (0-255)
+        imgdata.data[4 * i + 2] = 63;    // BLUE (0-255)
+    } else if (terrain[i] < 0.80) { // middle mountains
+        imgdata.data[4 * i] = 139;    // RED (0-255)
+        imgdata.data[4 * i + 1] = 69;    // GREEN (0-255)
+        imgdata.data[4 * i + 2] = 19;    // BLUE (0-255)
+    } else if (terrain[i] < 0.85) { // high mountains
+        imgdata.data[4 * i] = 109;    // RED (0-255)
+        imgdata.data[4 * i + 1] = 39;    // GREEN (0-255)
+        imgdata.data[4 * i + 2] = 0;    // BLUE (0-255)
+    } else {
+        imgdata.data[4 * i] = 255;    // RED (0-255)
+        imgdata.data[4 * i + 1] = 255;    // GREEN (0-255)
+        imgdata.data[4 * i + 2] = 255;    // BLUE (0-255)
     }
     imgdata.data[4 * i + 3] = 255;  // APLHA (0-255)
 }
@@ -249,7 +249,7 @@ for (let index = 0; index < evolis.length; index++) {
         do {
             evoy = (Math.random() * canvas.height - 10) + 1;
         } while (evoy >= (canvas.height - 10) || evoy <= 10);
-    } while (getTerrainHeightValue(evox, evoy) <= 0.2);
+    } while (getTerrainHeightValue(evox, evoy) <= foodthreshold);
     evolis[index] = new Evoli(total++, evox, evoy, Math.random() * 5);
 }
 
@@ -419,12 +419,16 @@ function showWinner() {
 
 }
 
+/*let treeImage = new Image(40,40)
+treeImage.src = "/assets/tree.png";*/
+
 function drawTerrain() {
     ctx.putImageData(imgdata, 0, 0);
+    //ctx.drawImage(treeImage, 50, 50, treeImage.width, treeImage.height);
 }
 
 function dropFood(x, y) {
-    if (getTerrainHeightValue(x, y) >= foodthreshold * 3) {
+    if (getTerrainHeightValue(x, y) >= foodthreshold) {
         let food = new Food(canvas.width, canvas.height);
         food.x = x;
         food.y = y;
@@ -433,11 +437,19 @@ function dropFood(x, y) {
 }
 
 function getTerrainHeightValue(x, y) {
-    return (simplex.noise2D(x / scale, y / scale) + simplexDistortion.noise2D(x / (scale / 3), y / (scale / 3)) + Math.sin(simplexDistortion2.noise2D(x / (scale / 2), y / (scale / 2))));
+    let number = Math.pow(
+      (1 * simplex.noise2D(x / scale, y/ scale)) 
+    + (0.5 * simplexDistortion.noise2D(x * 2 / scale, y * 2 / scale)) 
+    + (0.25 * simplexDistortion2.noise2D(x * 4 / scale, y * 4 / scale))
+    ,0.5);
+    if (Number.isNaN(number)) {
+        return 0;
+    }
+    return number;
 }
 
 function getPassable(value) {
-    if (value < threshold) {
+    if (value < threshold || Number.isNaN(terrain[i])) {
         return false;
     }
     return true;
