@@ -51,7 +51,7 @@ function aStar(start, end, data, _mapWidth, _mapHeight, _radius) {
 
     while (!openList.isEmpty) {
         let currentTime = performance.now()-startTime;
-        if (currentTime >50) { // to be removeed after optimizing
+        if (currentTime >40) { // to be removeed after optimizing
             console.log("Exceeding time limit, no valid path found in time. (" + currentTime + ")")
             return []
         }

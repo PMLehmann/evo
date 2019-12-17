@@ -295,6 +295,7 @@ function update(delta) {
                     if(distanceToFood <= evoli.eyeradius) {
                         if (calcDistance(evoli.x, evoli.y, evoli.desiredFood.x, evoli.desiredFood.y) > distanceToFood) {
                             evoli.desiredFood = null;
+                            break;
                         }
                     }
                 }
