@@ -1,6 +1,6 @@
 // Setup
 const scale = 700;
-const threshold = 0.005;
+const threshold = 0.05;
 const foodthreshold = 0.2;
 const canvas = document.getElementById('canvas');
 const canvasGUI = document.getElementById("canvasGUI");
@@ -29,6 +29,8 @@ canvas.addEventListener('click', function (event) {
 
 }, false);
 
+let terrain = new Terrain(ctx, canvas.width, canvas.height, foodthreshold, threshold, scale);
+
 class Food {
     constructor(width, height) {
         this.x, this.y;
@@ -39,7 +41,7 @@ class Food {
             do {
                 this.y = (Math.random() * height - 10) + 1;
             } while (this.y >= (height - 10) || this.y <= 10);
-        } while (getTerrainHeightValue(this.x, this.y) <= foodthreshold);
+        } while (terrain.getTerrainHeightValue(this.x, this.y) <= foodthreshold);
     }
     
     draw(ctx) {
@@ -109,15 +111,15 @@ class Evoli {
             this.x = (this.x + this.xspeed)
             this.y = (this.y + this.yspeed)
 
-            if (getTerrainHeightValue(this.x, this.y) < threshold) {
-                if (getTerrainHeightValue(originalx + this.xspeed, originaly) >= threshold) {
+            if (terrain.getTerrainHeightValue(this.x, this.y) < threshold) {
+                if (terrain.getTerrainHeightValue(originalx + this.xspeed, originaly) >= threshold) {
                     this.x = originalx + this.xspeed;
                 } else {
                     this.x = originalx;
                     this.xspeed = -this.xspeed;
                 }
 
-                if (getTerrainHeightValue(this.x, originaly + this.yspeed) >= threshold) {
+                if (terrain.getTerrainHeightValue(this.x, originaly + this.yspeed) >= threshold) {
                     this.y = originaly + this.yspeed;
                 } else {
                     this.y = originaly;
@@ -173,67 +175,6 @@ class Evoli {
 }
 
 // Game
-var terrain = new Array(canvas.width * canvas.height);
-var simplex = new SimplexNoise();
-var simplexDistortion = new SimplexNoise();
-var simplexDistortion2 = new SimplexNoise();
-let nodes = new Array(canvas.width * canvas.height);
-for (let line = 0; line < canvas.height; line++) {
-    for (let pixel = 0; pixel < canvas.width; pixel++) {
-        let height =  getTerrainHeightValue(pixel, line);
-        terrain[(line * canvas.width) + pixel] =  height;
-        nodes[(line * canvas.width) + pixel] =  new Node(pixel, line, getPassable(height));
-    }
-}
-var imgdata = ctx.getImageData(0, 0, canvas.width, canvas.height);
-var imgdatalen = imgdata.data.length;
-
-
-for (var i = 0; i < imgdatalen / 4; i++) {  //iterate over every pixel in the canvas
-    if (terrain[i] < threshold || Number.isNaN(terrain[i])) {
-        imgdata.data[4 * i] = 0;    // RED (0-255)
-        imgdata.data[4 * i + 1] = 0;    // GREEN (0-255)
-        imgdata.data[4 * i + 2] = 150;    // BLUE (0-255)
-    } else if (terrain[i] < foodthreshold) {
-        imgdata.data[4 * i] = 0;    // RED (0-255)
-        imgdata.data[4 * i + 1] = 0;    // GREEN (0-255)
-        imgdata.data[4 * i + 2] = 255;    // BLUE (0-255)
-    } else if (terrain[i] < 0.3) { // Beach
-        imgdata.data[4 * i] = 255;    // RED (0-255)
-        imgdata.data[4 * i + 1] = 255;    // GREEN (0-255)
-        imgdata.data[4 * i + 2] = 102;    // BLUE (0-255)
-    } else if (terrain[i] < 0.4) { // Gras
-        imgdata.data[4 * i] = 0;    // RED (0-255)
-        imgdata.data[4 * i + 1] = 255;    // GREEN (0-255)
-        imgdata.data[4 * i + 2] = 0;    // BLUE (0-255)
-    } else if (terrain[i] < 0.5) { // forest
-        imgdata.data[4 * i] = 0;    // RED (0-255)
-        imgdata.data[4 * i + 1] = 169;    // GREEN (0-255)
-        imgdata.data[4 * i + 2] = 60;    // BLUE (0-255)
-    } else if (terrain[i] < 0.6) { // deep forest
-        imgdata.data[4 * i] = 34;    // RED (0-255)
-        imgdata.data[4 * i + 1] = 139;    // GREEN (0-255)
-        imgdata.data[4 * i + 2] = 34;    // BLUE (0-255)
-    } else if (terrain[i] < 0.7) { // low mountains
-        imgdata.data[4 * i] = 205;    // RED (0-255)
-        imgdata.data[4 * i + 1] = 133;    // GREEN (0-255)
-        imgdata.data[4 * i + 2] = 63;    // BLUE (0-255)
-    } else if (terrain[i] < 0.80) { // middle mountains
-        imgdata.data[4 * i] = 139;    // RED (0-255)
-        imgdata.data[4 * i + 1] = 69;    // GREEN (0-255)
-        imgdata.data[4 * i + 2] = 19;    // BLUE (0-255)
-    } else if (terrain[i] < 0.85) { // high mountains
-        imgdata.data[4 * i] = 109;    // RED (0-255)
-        imgdata.data[4 * i + 1] = 39;    // GREEN (0-255)
-        imgdata.data[4 * i + 2] = 0;    // BLUE (0-255)
-    } else {
-        imgdata.data[4 * i] = 255;    // RED (0-255)
-        imgdata.data[4 * i + 1] = 255;    // GREEN (0-255)
-        imgdata.data[4 * i + 2] = 255;    // BLUE (0-255)
-    }
-    imgdata.data[4 * i + 3] = 255;  // APLHA (0-255)
-}
-
 var total = 1;
 let evolis = new Array(10);
 let droppedFood = new Array(1);
@@ -249,7 +190,7 @@ for (let index = 0; index < evolis.length; index++) {
         do {
             evoy = (Math.random() * canvas.height - 10) + 1;
         } while (evoy >= (canvas.height - 10) || evoy <= 10);
-    } while (getTerrainHeightValue(evox, evoy) <= foodthreshold);
+    } while (terrain.getTerrainHeightValue(evox, evoy) <= foodthreshold);
     evolis[index] = new Evoli(total++, evox, evoy, Math.random() * 5);
 }
 
@@ -320,7 +261,7 @@ function update(delta) {
 
                 if (closestFoodIndex != -1) {
                     evoli.desiredFood = droppedFood[closestFoodIndex];
-                    evoli.pathToFood = calculatePath(getNode(evoli.x, evoli.y) ,getNode(evoli.desiredFood.x, evoli.desiredFood.y), nodes, canvas.width, canvas.height);
+                    evoli.pathToFood = calculatePath(terrain.getNode(evoli.x, evoli.y) ,terrain.getNode(evoli.desiredFood.x, evoli.desiredFood.y), terrain.nodes, canvas.width, canvas.height);
                     if (evoli.pathToFood == []) {
                         evoli.unreachableFoods.push(droppedFood[closestFoodIndex]);
                         evoli.desiredFood = null;
@@ -388,7 +329,7 @@ function draw() {
     // Game
     // terrain
 
-    drawTerrain();
+    terrain.draw();
 
     for (let index = 0; index < droppedFood.length; index++) {
         droppedFood[index].draw(ctx);
@@ -419,46 +360,14 @@ function showWinner() {
 
 }
 
-/*let treeImage = new Image(40,40)
-treeImage.src = "/assets/tree.png";*/
-
-function drawTerrain() {
-    ctx.putImageData(imgdata, 0, 0);
-    //ctx.drawImage(treeImage, 50, 50, treeImage.width, treeImage.height);
-}
-
 function dropFood(x, y) {
-    if (getTerrainHeightValue(x, y) >= foodthreshold) {
+    if (terrain.getTerrainHeightValue(x, y) >= foodthreshold) {
         let food = new Food(canvas.width, canvas.height);
         food.x = x;
         food.y = y;
         droppedFood.push(food);
     }
 }
-
-function getTerrainHeightValue(x, y) {
-    let number = Math.pow(
-      (1 * simplex.noise2D(x / scale, y/ scale)) 
-    + (0.5 * simplexDistortion.noise2D(x * 2 / scale, y * 2 / scale)) 
-    + (0.25 * simplexDistortion2.noise2D(x * 4 / scale, y * 4 / scale))
-    ,0.5);
-    if (Number.isNaN(number)) {
-        return 0;
-    }
-    return number;
-}
-
-function getPassable(value) {
-    if (value < threshold || Number.isNaN(terrain[i])) {
-        return false;
-    }
-    return true;
-}
-
-function getNode(x, y) {
-    return nodes[(round(y) * canvas.width)+ round(x)];
-}
-
 
 function drawGUI() {
     for (let index = 0; index < evolis.length; index++) {
