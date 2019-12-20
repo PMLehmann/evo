@@ -11,11 +11,12 @@ var lastFrameTimeMs = 0,
     timestep = 1000 / 60;
 
 let mainDivWidth = document.getElementById('main').clientWidth;
-let finalwidth = valBetween(mainDivWidth * 0.71, 300, 710);
+let finalwidth = valBetween(mainDivWidth, 300, 1000);
 canvas.setAttribute('width', finalwidth);
-let finalHeight = valBetween(window.innerHeight - 40, 400, finalwidth)
+canvasGUI.setAttribute('width', finalwidth);
+let finalHeight = valBetween(window.innerHeight - 140, 400, finalwidth)
 canvas.setAttribute('height', finalHeight);
-canvasGUI.setAttribute('height', finalHeight);
+canvasGUI.setAttribute('height', 100);
 let ctx = canvas.getContext('2d');
 let ctxGUI = canvasGUI.getContext('2d');
 
@@ -370,15 +371,25 @@ function dropFood(x, y) {
 }
 
 function drawGUI() {
+    let counter = 1;
     for (let index = 0; index < evolis.length; index++) {
         var evoli = evolis[index];
         ctxGUI.fillStyle = "white";
         ctxGUI.font = "15px Arial";
-        ctxGUI.fillText("Evoli #" + evoli.number + " (S:" + Math.abs(evoli.tempSpeed) + ") (A:" + evoli.ate + ") (H:" + roundDec(evoli.health, 2) + ")", 10, ((index + 1) * 35) - 8);
-        ctxGUI.fillStyle = "red";
-        ctxGUI.fillRect(10, (index + 1) * 35, 200, 8);
-        ctxGUI.fillStyle = "green";
-        ctxGUI.fillRect(10, (index + 1) * 35, evoli.health * 2, 8)
+        if (counter%2!=0) {
+            ctxGUI.fillText((index+1) + ". Evoli#" + evoli.number + " (S:" + Math.abs(evoli.tempSpeed) + ") (A:" + evoli.ate + ") (H:" + roundDec(evoli.health, 2) + ")", 10 + ((index/2)*230), 40 - 8);
+            ctxGUI.fillStyle = "red";
+            ctxGUI.fillRect(10 + ((index/2)*230), 40, 200, 8);
+            ctxGUI.fillStyle = "green";
+            ctxGUI.fillRect(10 + ((index/2)*230), 40, evoli.health * 2, 8)
+        } else {
+            ctxGUI.fillText((index+1) + ". Evoli#" + evoli.number + " (S:" + Math.abs(evoli.tempSpeed) + ") (A:" + evoli.ate + ") (H:" + roundDec(evoli.health, 2) + ")", 10 + (((index-1)/2)*230), 2 * 40 - 8);
+            ctxGUI.fillStyle = "red";
+            ctxGUI.fillRect(10 + (((index-1)/2)*230), 2 * 40, 200, 8);
+            ctxGUI.fillStyle = "green";
+            ctxGUI.fillRect(10 + (((index-1)/2)*230), 2 * 40, evoli.health * 2, 8)
+        }
+        counter++;
     }
 }
 
