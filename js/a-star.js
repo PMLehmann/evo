@@ -5,9 +5,10 @@ class Node {
         this.f = 0;
         this.g = 0; 
         this.h = 0;
+        this.calculated = false;
+        this.closed = false;
         this.passable = passable;
         this.parent;
-        //this.passable = getPassable(x,y);
     }
 
     reset() {
@@ -15,11 +16,19 @@ class Node {
         this.g = 0;
         this.h = 0;
         this.parent = null;
+        this.calculated = false;
+        this.closed = false;
     }
 }
 
-let openList = [];
-let closedList = [];
+function getHeap() {
+    return new BinaryHeap(function(node) {
+      return node.f;
+    });
+  }
+
+let openList;
+let toClean = [];
 let endNode;
 let mapData;
 let mapWidth;
@@ -29,15 +38,15 @@ let startNode;
 
 function aStar(start, end, data, _mapWidth, _mapHeight, _radius) {
     let startTime = performance.now();
-    for (let index = 0; index < data.length; index++) {
-        data[index].reset;
+    for (let index = 0; index < toClean.length; index++) {
+        toClean[index].reset();
     }
+    toClean = [];
     if (!start.passable || !end.passable) {
         console.log("start or end not reachable")
         return [];
     }
-    openList = [];
-    closedList = [];
+    openList = getHeap();
     radius = _radius;
     startNode = start;
     console.log(start);
@@ -49,13 +58,13 @@ function aStar(start, end, data, _mapWidth, _mapHeight, _radius) {
     openList.push(startNode);
     let validationNode;
 
-    while (!openList.isEmpty) {
+    while (openList.size() > 0) {
         let currentTime = performance.now()-startTime;
         if (currentTime >40) { // to be removeed after optimizing
             console.log("Exceeding time limit, no valid path found in time. (" + currentTime + ")")
             return []
         }
-        let currentNode = getAndRemoveMinF(openList);
+        let currentNode = openList.pop() //getAndRemoveMinF(openList);
         if (currentNode == null) {
             console.log("no more nodes")
             return []
@@ -82,34 +91,17 @@ function aStar(start, end, data, _mapWidth, _mapHeight, _radius) {
             return [];
         }
 
-        closedList.push(currentNode);
+        currentNode.closed = true;
 
         expandNode(currentNode);
+        toClean.push(currentNode);
         validationNode = currentNode;
     }
 
+    console.log("Empty List")
     return [];
 }
 
-function getAndRemoveMinF(list) {
-    var lowest = Number.POSITIVE_INFINITY;
-    var tmp;
-    var found;
-    for (var i=list.length-1; i>=0; i--) {
-        tmp = list[i].f;
-        if (tmp < lowest) {
-            lowest = tmp;
-            found = i;
-        }
-    }
-    let nodeToReturn = list[found];
-    list.splice(found, 1);
-    return nodeToReturn;
-  }
-
-// überprüft alle Nachfolgeknoten und fügt sie der Open List hinzu, wenn entweder
-// - der Nachfolgeknoten zum ersten Mal gefunden wird, oder
-// - ein besserer Weg zu diesem Knoten gefunden wird
 function expandNode(currentNode) {
 
     let neighbours = new Array(0);
@@ -148,33 +140,34 @@ function expandNode(currentNode) {
         if (node == null) {
             continue;
         }
-        if (closedList.some(nodeInList => nodeInList.x == node.x && nodeInList.y == node.y) || !node.passable || calcDistance(startNode.x, startNode.y, node.x, node.y) > radius) {
+        if (node.closed || !node.passable || calcDistance(startNode.x, startNode.y, node.x, node.y) > (radius+150)) {
             continue;
         }
 
-        let temp = new Node(0,0, false); 
-
         let walkCost = 1;
 
-        if (currentNode.x != node.x && currentNode.y != node.y) {
-            walkCost = 1.1;
-        }
+            if (currentNode.x != node.x && currentNode.y != node.y) {
+                walkCost = 1.1;
+            }
+        let gScore = currentNode.g + walkCost;
+        let visited = node.calculated;
 
-        temp.g = currentNode.g + walkCost;
-        temp.h = calcDistance(node.x, node.y, endNode.x, endNode.y);
-        temp.f = temp.g + temp.h;
+        if (!visited || gScore < node.g) {
+            
+            toClean.push(node);
+            node.g = gScore;
+            node.h = calcDistance(node.x, node.y, endNode.x, endNode.y);
+            node.f = node.g + node.h;
+            node.parent = currentNode;
+            node.calculated = true;
 
-        if (openList.some(nodeInList => nodeInList.x == node.x && nodeInList.y == node.y) && temp.g >= node.g) {
-            continue
+            if (!visited) {
+                openList.push(node);
+            } else {
+                openList.rescoreElement(node);
+            }
         }
-
-        node.g = temp.g;
-        node.h = temp.h;
-        node.f = temp.f;
-        node.parent = currentNode;
-        if (!openList.some(nodeInList => nodeInList.x == node.x && nodeInList.y == node.y)) {
-            openList.push(node);
-        }
+    
     }
 
 }
