@@ -276,7 +276,7 @@ function update(delta) {
                 if (evoli.unreachableFoods.some(foodInList => foodInList.x == food.x && foodInList.y == food.y)) {
                     continue;
                 }
-                if (Math.abs(Math.abs(evoli.x) - (Math.abs(food.x))) < 3 && Math.abs(Math.abs(evoli.y) - Math.abs(food.y)) < 3) {
+                if (Math.abs(Math.abs(evoli.x) - (Math.abs(food.x))) < 1 && Math.abs(Math.abs(evoli.y) - Math.abs(food.y)) < 1) {
                     evoli.health += 30;
                     evoli.ate++;
                     evoli.hungry = 0;
