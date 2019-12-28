@@ -164,7 +164,9 @@ class Evoli {
 
     draw(ctx) {
         ctx.fillStyle = "red";
-        ctx.fillRect(this.x, this.y, 5, 5)
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 2.5, 0, Math.PI*2, true);
+        ctx.fill();
         ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.eyeradius, 0, Math.PI*2, true);
