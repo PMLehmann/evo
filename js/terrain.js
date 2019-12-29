@@ -15,8 +15,119 @@ class Terrain {
         this.simplex = new SimplexNoise(_seed);
         this.simplexDistortion = new SimplexNoise(_seed);
         this.simplexDistortion2 = new SimplexNoise(_seed);
+        this.simplexDistortion3 = new SimplexNoise(_seed);
+        this.simplexDistortion4 = new SimplexNoise(_seed);
         this.generateHeightMap();
+        this.generateRivers(25);
         this.generateTerrain();
+    }
+
+    generateRivers(noOfRivers) {
+        for (let index = 0; index < noOfRivers; index++) {
+            
+            // generate River
+
+            // starting point
+
+            let riversource = {
+                x: (Math.random() * this.width - 10) + 1,
+                y: (Math.random() * this.height - 10) + 1,
+                height: 0
+            };
+
+            riversource.height = this.getTerrainHeightValue(riversource.x, riversource.y);
+
+            while (riversource.height >= 0.95 || riversource.height <= 0.7) {
+                riversource.x = (Math.random() * this.width - 10) + 1;
+                riversource.y = (Math.random() * this.height - 10) + 1;
+                riversource.height = this.getTerrainHeightValue(riversource.x, riversource.y);
+            }
+            this.setTerrainHeightValue(riversource.x, riversource.y, 3);
+
+            // create riverbed by looping neighbors
+
+            // collect neighbors
+
+            let riverstream = {
+                x: riversource.x,
+                y: riversource.y,
+                riverrun: [],
+                height: 0.15
+            }
+
+            riverstream.riverrun.push([riversource.x, riversource.y])
+
+            let lowestNeighbour = {
+                x: -1,
+                y: -1,
+                height: 2
+            }
+
+            let neighborCoords = [
+                [-1,-1],
+                [0,-1],
+                [1,-1],
+                [-1,0],
+                [1,0],
+                [-1,1],
+                [0,1],
+                [1,1]
+            ]
+
+            let neighborCoordsWithoutHex = [
+                [0,-1],
+                [-1,0],
+                [1,0],
+                [0,1]
+            ]
+
+            let neighborCoordsDiag = [
+                [-1,-1],
+                [-1,1],
+                [1,-1],
+                [1,1]
+            ]
+
+            let foundSea = false;
+
+            while (!foundSea) {
+
+                lowestNeighbour.height = 2;
+            
+                for (let index = 0; index < neighborCoords.length; index+= 2) {
+                    let coords = neighborCoords[index];
+                    let neighborHeight = this.getTerrainHeightValue(riverstream.x+coords[0], riverstream.y+coords[1]);
+                    if (neighborHeight <= this.waterLevel || neighborHeight == undefined) {
+                        foundSea = true;
+                        break;
+                    }
+                    if (neighborHeight < lowestNeighbour.height && neighborHeight >= this.deepSeaLevel) {
+                        lowestNeighbour.x = riverstream.x+coords[0];
+                        lowestNeighbour.y = riverstream.y+coords[1];
+                        lowestNeighbour.height = neighborHeight;
+                    }
+                }
+
+                for (let index = 0; index < neighborCoords.length; index+=2) {
+                    let coords = neighborCoords[index];
+                    this.setTerrainHeightValue(riverstream.x+coords[0], riverstream.y+coords[1], 3)
+                    //this.getNode(riverstream.x+coords[0], riverstream.y+coords[1]).passable = false;
+                }
+
+                if (lowestNeighbour.height != 2 && !foundSea) {
+                    riverstream.x = lowestNeighbour.x;
+                    riverstream.y = lowestNeighbour.y;
+                    this.setTerrainHeightValue(riverstream.x, riverstream.y, 3);
+                    riverstream.riverrun.push([riverstream.x, riverstream.y]);
+                    //this.getNode(riverstream.x, riverstream.y).passable = false;
+                } else {
+                    foundSea = true;
+                }
+
+                shuffle(neighborCoords);
+            }
+        
+        }
     }
 
     generateHeightMap() {
@@ -34,7 +145,9 @@ class Terrain {
           (1 * this.simplex.noise2D(x / scale, y/ scale)) 
         + (0.5 * this.simplexDistortion.noise2D(x * 2 / scale, y * 2 / scale)) 
         + (0.25 * this.simplexDistortion2.noise2D(x * 4 / scale, y * 4 / scale))
-        ,1);
+        + (0.125 * this.simplexDistortion3.noise2D(x * 8 / scale, y * 8 / scale))
+        + (0.0625 * this.simplexDistortion4.noise2D(x * 16 / scale, y * 16 / scale))
+        ,0.7);
         if (Number.isNaN(number)) {
             return 0;
         }
@@ -44,7 +157,11 @@ class Terrain {
     generateTerrain() {
         var imgdatalen = this.imgData.data.length;
         for (var i = 0; i < imgdatalen / 4; i++) {  //iterate over every pixel in the canvas
-            if (this.heights[i] < this.deepSeaLevel || Number.isNaN(this.heights[i])) {
+            if (this.heights[i] == 3){
+                this.imgData.data[4 * i] = 25;    // RED (0-255)
+                this.imgData.data[4 * i + 1] = 25;    // GREEN (0-255)
+                this.imgData.data[4 * i + 2] = 112;    // BLUE (0-255)
+            } else if (this.heights[i] < this.deepSeaLevel || Number.isNaN(this.heights[i])) {
                 this.imgData.data[4 * i] = 0;    // RED (0-255)
                 this.imgData.data[4 * i + 1] = 0;    // GREEN (0-255)
                 this.imgData.data[4 * i + 2] = 150;    // BLUE (0-255)
@@ -93,6 +210,10 @@ class Terrain {
         return this.heights[(round(y) * this.width)+ round(x)]
     }
 
+    setTerrainHeightValue(x,y,value) {
+        this.heights[(round(y) * this.width)+ round(x)] = value;
+    }
+
     getPassable(value) {
         if (value < this.deepSeaLevel || Number.isNaN(value)) {
             return false;
@@ -107,4 +228,5 @@ class Terrain {
     draw() {
         this.ctx.putImageData(this.imgData, 0, 0);
     }
+ 
 }
