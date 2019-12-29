@@ -92,7 +92,7 @@ class Terrain {
 
             while (!foundSea) {
 
-                lowestNeighbour.height = 2;
+                lowestNeighbour.height = 4;
             
                 for (let index = 0; index < neighborCoords.length; index+= 2) {
                     let coords = neighborCoords[index];
@@ -108,13 +108,13 @@ class Terrain {
                     }
                 }
 
-                for (let index = 0; index < neighborCoords.length; index+=2) {
+                for (let index = 0; index < neighborCoords.length; index++) {
                     let coords = neighborCoords[index];
-                    this.setTerrainHeightValue(riverstream.x+coords[0], riverstream.y+coords[1], 3)
+                    //this.setTerrainHeightValue(riverstream.x+coords[0], riverstream.y+coords[1], 3)
                     //this.getNode(riverstream.x+coords[0], riverstream.y+coords[1]).passable = false;
                 }
 
-                if (lowestNeighbour.height != 2 && !foundSea) {
+                if (lowestNeighbour.height != 4 && !foundSea) {
                     riverstream.x = lowestNeighbour.x;
                     riverstream.y = lowestNeighbour.y;
                     this.setTerrainHeightValue(riverstream.x, riverstream.y, 3);
