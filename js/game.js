@@ -1,7 +1,7 @@
 // Setup
 const scale = 700;
 const threshold = 0.05;
-const foodthreshold = 0.2;
+const foodthreshold = 0.13;
 const canvas = document.getElementById('canvas');
 const canvasGUI = document.getElementById("canvasGUI");
 

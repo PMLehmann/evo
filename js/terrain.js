@@ -108,11 +108,11 @@ class Terrain {
                     }
                 }
 
-                for (let index = 0; index < neighborCoords.length; index++) {
-                    let coords = neighborCoords[index];
+                //for (let index = 0; index < neighborCoords.length; index++) {
+                //    let coords = neighborCoords[index];
                     //this.setTerrainHeightValue(riverstream.x+coords[0], riverstream.y+coords[1], 3)
                     //this.getNode(riverstream.x+coords[0], riverstream.y+coords[1]).passable = false;
-                }
+                //}
 
                 if (lowestNeighbour.height != 4 && !foundSea) {
                     riverstream.x = lowestNeighbour.x;
@@ -125,6 +125,19 @@ class Terrain {
                 }
 
                 shuffle(neighborCoords);
+            }
+
+            // create riverside
+
+            for (let index = 0; index < riverstream.riverrun.length; index++) {
+                let riverPos = riverstream.riverrun[index];
+                for (let index2 = 0; index2 < neighborCoords.length; index2++) {
+                    let coords = neighborCoords[index2];
+                    let currentHeight = this.getTerrainHeightValue(riverPos[0]+coords[0], riverPos[1]+coords[1])
+                    if (currentHeight != 3 && currentHeight >= this.waterLevel) {
+                        this.setTerrainHeightValue(riverPos[0]+coords[0], riverPos[1]+coords[1], 0.15)
+                    }
+                }
             }
         
         }
@@ -147,7 +160,7 @@ class Terrain {
         + (0.25 * this.simplexDistortion2.noise2D(x * 4 / scale, y * 4 / scale))
         + (0.125 * this.simplexDistortion3.noise2D(x * 8 / scale, y * 8 / scale))
         + (0.0625 * this.simplexDistortion4.noise2D(x * 16 / scale, y * 16 / scale))
-        ,0.7);
+        ,1);
         if (Number.isNaN(number)) {
             return 0;
         }
@@ -160,24 +173,24 @@ class Terrain {
             if (this.heights[i] == 3){
                 this.imgData.data[4 * i] = 25;    // RED (0-255)
                 this.imgData.data[4 * i + 1] = 25;    // GREEN (0-255)
-                this.imgData.data[4 * i + 2] = 112;    // BLUE (0-255)
+                this.imgData.data[4 * i + 2] = 255;    // BLUE (0-255)
             } else if (this.heights[i] < this.deepSeaLevel || Number.isNaN(this.heights[i])) {
                 this.imgData.data[4 * i] = 0;    // RED (0-255)
                 this.imgData.data[4 * i + 1] = 0;    // GREEN (0-255)
-                this.imgData.data[4 * i + 2] = 150;    // BLUE (0-255)
+                this.imgData.data[4 * i + 2] = 200;    // BLUE (0-255)
             } else if (this.heights[i] < this.waterLevel) {
                 this.imgData.data[4 * i] = 0;    // RED (0-255)
                 this.imgData.data[4 * i + 1] = 0;    // GREEN (0-255)
                 this.imgData.data[4 * i + 2] = 255;    // BLUE (0-255)
-            } else if (this.heights[i] < 0.3) { // Beach
+            } else if (this.heights[i] < 0.18) { // Beach
                 this.imgData.data[4 * i] = 255;    // RED (0-255)
                 this.imgData.data[4 * i + 1] = 255;    // GREEN (0-255)
                 this.imgData.data[4 * i + 2] = 102;    // BLUE (0-255)
-            } else if (this.heights[i] < 0.4) { // Gras
+            } else if (this.heights[i] < 0.25) { // Gras
                 this.imgData.data[4 * i] = 0;    // RED (0-255)
                 this.imgData.data[4 * i + 1] = 255;    // GREEN (0-255)
                 this.imgData.data[4 * i + 2] = 0;    // BLUE (0-255)
-            } else if (this.heights[i] < 0.5) { // forest
+            } else if (this.heights[i] < 0.4) { // forest
                 this.imgData.data[4 * i] = 0;    // RED (0-255)
                 this.imgData.data[4 * i + 1] = 169;    // GREEN (0-255)
                 this.imgData.data[4 * i + 2] = 60;    // BLUE (0-255)
