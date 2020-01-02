@@ -9,6 +9,8 @@ class Node {
         this.closed = false;
         this.passable = passable;
         this.parent;
+        this.height = 0;
+        this.type;
     }
 
     reset() {

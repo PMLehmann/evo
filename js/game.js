@@ -112,15 +112,15 @@ class Evoli {
             this.x = (this.x + this.xspeed)
             this.y = (this.y + this.yspeed)
 
-            if (terrain.getTerrainHeightValue(this.x, this.y) < threshold) {
-                if (terrain.getTerrainHeightValue(originalx + this.xspeed, originaly) >= threshold) {
+            if (!terrain.getTerrainPassable(this.x, this.y)) {
+                if (terrain.getTerrainPassable(originalx + this.xspeed, originaly)) {
                     this.x = originalx + this.xspeed;
                 } else {
                     this.x = originalx;
                     this.xspeed = -this.xspeed;
                 }
 
-                if (terrain.getTerrainHeightValue(this.x, originaly + this.yspeed) >= threshold) {
+                if (terrain.getTerrainPassable(this.x, originaly + this.yspeed)) {
                     this.y = originaly + this.yspeed;
                 } else {
                     this.y = originaly;
